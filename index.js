@@ -91,11 +91,38 @@ conexion.connect(function (error) { //Creo la conexión
 
 })
 
-app.post("/postProductes", (req, res) => {
+app.post("/insertarProducto", (req, res) => {
+  const { categoria, nom, descripcio, preu, url_imatge } = req.body;
 
-  
+  if (!categoria || !nom || !preu || !url_imatge) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
+  }
 
-})
+  const conexion = mysql.createConnection(dbConfig);
+
+  conexion.connect(function (error) {
+    if (error) {
+      console.error("Error de conexión:", error);
+      res.status(500).json({ error: "Error de conexión a la base de datos" });
+    } else {
+      console.log("Conexión realizada con éxito!");
+
+      const insertQuery = "INSERT INTO productes (categoria, nom, descripcio, preu, url_imatge) VALUES (?, ?, ?, ?, ?)";
+
+      conexion.query(insertQuery, [categoria, nom, descripcio, preu, url_imatge], function (err, result) {
+        if (err) {
+          console.error("Error al insertar en la base de datos:", err);
+          res.status(500).json({ error: "Error al insertar en la base de datos" });
+        } else {
+          console.log("Inserción exitosa!");
+          res.json({ message: "Inserción exitosa" });
+        }
+
+        conexion.end();
+      });
+    }
+  });
+});
 
 app.get("/getComandes", (req, res) => {
 
