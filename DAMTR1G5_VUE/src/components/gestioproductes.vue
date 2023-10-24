@@ -1,26 +1,83 @@
 <template>
     <title>Gestió de productes</title>
-   
-        <v-layout class="rounded rounded-md">
-            <v-app-bar title="Gestió de productes">
-                <v-btn @click="irPanell">Panell de control</v-btn> 
-                <v-btn @click="irComandes">Comandes</v-btn>
-            </v-app-bar>
-            <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
-                
-                
-            </v-main>
-        </v-layout>
+
+    <v-layout class="rounded rounded-md" v-if="mostrar_productes">
+        <v-app-bar title="Gestió de productes">
+            <v-btn @click="irPanell">Panell de control</v-btn>
+            <v-btn @click="irComandes">Comandes</v-btn>
+            <v-btn @click="verFormulari">Insertar Producto</v-btn>
+        </v-app-bar>
+        <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+            <v-container class="grid-list-md">
+                <v-row>
+                    <v-col v-for="producte in productes.result" :key="producte.id" cols="3">
+                        <v-card>
+                            <v-img :src="`/imatges_productes/producte.url_imatge`" height="300"></v-img>
+                            <v-text>{{ producte.nom }}</v-text><br>
+                            <v-btn @click="verInfo(producte.id)">Más info</v-btn>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+            <v-dialog v-model="ver_info" max-width="600">
+                <v-card>
+                    <v-card-title>Informació del producte: </v-card-title>
+                    <v-card-text>
+                        <v-text>{{ selected_productes.nom }}</v-text><br>
+                        <v-text>{{ selected_productes.categoria }}</v-text><br>
+                        <v-text>{{ selected_productes.descripcio }}</v-text><br>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn @click="verAfegirPregunta = false">Tancar</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+            <div v-if="verAfegirProducte">
+                <v-card>
+                    <v-card-title>Afegir Producte</v-card-title>
+                    <v-card-text>
+                        <v-text-field v-model="nuevo_producte.categoria" label="Categoria"></v-text-field>
+                        <v-text-field v-model="nuevo_producte.nom" label="Nom"></v-text-field>
+                        <v-text-field v-model="nuevo_producte.descripció" label="Descripció"></v-text-field>
+                        <v-text-field v-model="nuevo_producte.preu" label="Preu"></v-text-field>
+                        <v-text-field v-model="nuevo_producte.url_imatge" label="URL de la imatge"></v-text-field>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn @click="addProductes">Agregar Producte</v-btn>
+                        <v-btn @click="verAfegirPregunta = false">Cancelar</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </div>
+        </v-main>
+    </v-layout>
+</template>
   
-    
-  </template>
-  
-  <script>
-  export default {
+<script>
+import { getProductes, addProducte } from '@/services/communicationsManager'
+export default {
     data() {
-      return {
-        
-      }
+        return {
+            productes: null,
+            mostrar_productes: null,
+            ver_info: null,
+            verAfegirProducte: false,
+            selected_productes: {},
+            nuevo_producte: {
+                "id": null,
+                "categoria": null,
+                "nom": null,
+                "descripció": null,
+                "preu": null,
+                "url_imatge": null,
+            }
+
+        }
+    },
+    created() {
+        getProductes().then(response => {
+            this.productes = response;
+            this.mostrar_productes = true;
+        })
     },
     methods: {
         irComandes() {
@@ -28,8 +85,37 @@
         },
         irPanell() {
             this.$router.push("/")
+        },
+        verInfo(id) {
+            const product = selected_productes.find((p) => p.id == id)
+
+        },
+        verFormulari() {
+            this.verAfegirProducte = true;
+        },
+        addProductes() {
+
+            addProducte(this.nuevo_producte)
+                .then(() => {
+                    return getProductes();
+                })
+                .then((response) => {
+                    this.productes = response;
+                })
+                .catch((error) => {
+                    console.error('Error al agregar producto:', error);
+                });
+
+            this.nuevo_producte = {
+                "id": null,
+                "categoria": null,
+                "nom": null,
+                "descripció": null,
+                "preu": null,
+                "url_imatge": null,
+            };
         }
 
     }
-  }
-  </script>
+}
+</script>

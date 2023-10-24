@@ -1,10 +1,8 @@
 <template>
     <title>Panell de control</title>
-    <div class="panell_principal" v-if="verPanell">
+    <div class="panell_principal" >
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="Panell de control">
-                
-            </v-app-bar>
+            <v-app-bar title="Panell de control"></v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-card text="Gestió Productes">
                     <img src="https://i.pinimg.com/originals/7c/47/44/7c4744fa2d6e36bb69657845d7eb9b11.jpg" style="height: 250px; width: 250px;">
