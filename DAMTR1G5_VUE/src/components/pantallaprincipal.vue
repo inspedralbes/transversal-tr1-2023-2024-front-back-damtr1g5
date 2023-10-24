@@ -3,7 +3,7 @@
     <div class="panell_principal" v-if="verPanell">
         <v-layout class="rounded rounded-md">
             <v-app-bar title="Panell de control">
-                <v-btn @click="veureStats" >Mostrar Estadístiques</v-btn>
+                
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-card text="Gestió Productes">
@@ -22,24 +22,14 @@
         </v-layout>
     </div>
 
-    <div class="panell_estadistiques" v-if="verStats">
-        <v-layout class="rounded rounded-md">
-            <v-app-bar title="Estadistiques">
-                <v-btn @click="veurePanell">Panell Control</v-btn>
-            </v-app-bar>
-            <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
-                
-            </v-main>
-        </v-layout>
-    </div>
+    
 </template>
   
 <script>
 export default {
     data() {
         return {
-            verPanell: true,
-            verStats: false,
+            
 
         }
     },
@@ -50,15 +40,7 @@ export default {
         irProductes() {
             this.$router.push("/gestioproductes")
         },
-        veureStats(){
-            this.verPanell = false
-            this.verStats = true
-        },
-        veurePanell(){
-            this.verPanell = true
-            this.verStats = false
-
-        }
+        
 
     }
 }
