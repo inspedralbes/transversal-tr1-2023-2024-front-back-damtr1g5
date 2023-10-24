@@ -12,9 +12,9 @@
                 <v-row>
                     <v-col v-for="producte in productes.result" :key="producte.id" cols="3">
                         <v-card>
-                            <v-img :src="`/imatges_productes/producte.url_imatge`" height="300"></v-img>
+                            <v-img :src="`http://localhost:3001/${producte.url_imatge}`" height="300"></v-img>
                             <v-text>{{ producte.nom }}</v-text><br>
-                            <v-btn @click="verInfo(producte.id)">Más info</v-btn>
+                            <v-btn @click="verInfo(producte)">Más info</v-btn>
                         </v-card>
                     </v-col>
                 </v-row>
@@ -23,12 +23,15 @@
                 <v-card>
                     <v-card-title>Informació del producte: </v-card-title>
                     <v-card-text>
-                        <v-text>{{ selected_productes.nom }}</v-text><br>
-                        <v-text>{{ selected_productes.categoria }}</v-text><br>
-                        <v-text>{{ selected_productes.descripcio }}</v-text><br>
+                        <h4>Nom:</h4><v-text>{{ selected_productes.nom }}</v-text><br>
+                        <h4>Categoria:</h4><v-text>{{ selected_productes.categoria }}</v-text><br>
+                        <h4>Descripció:</h4><v-text>{{ selected_productes.descripció }}</v-text><br>
+                        <h4>Preu:</h4><v-text>{{ selected_productes.preu }}</v-text>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn @click="verAfegirPregunta = false">Tancar</v-btn>
+                        <v-btn @click="ver_info = false">Tancar</v-btn>
+                        <v-btn style="color: red;">Esborrar producte</v-btn>
+                        <v-btn>Editar Producte</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -44,7 +47,7 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-btn @click="addProductes">Agregar Producte</v-btn>
-                        <v-btn @click="verAfegirPregunta = false">Cancelar</v-btn>
+                        <v-btn @click="verAfegirProducte = false">Cancelar</v-btn>
                     </v-card-actions>
                 </v-card>
             </div>
@@ -86,9 +89,10 @@ export default {
         irPanell() {
             this.$router.push("/")
         },
-        verInfo(id) {
-            const product = selected_productes.find((p) => p.id == id)
-
+        verInfo(producte) {
+            this.selected_productes = producte;
+            console.log('selected_productes:', this.selected_productes);
+            this.ver_info = true;
         },
         verFormulari() {
             this.verAfegirProducte = true;
@@ -114,7 +118,8 @@ export default {
                 "preu": null,
                 "url_imatge": null,
             };
-        }
+        },
+
 
     }
 }
