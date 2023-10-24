@@ -14,12 +14,7 @@ app.listen(PORT, function () {
 });
 
 var mysql = require('mysql2');
-var conexion = mysql.createConnection({
-  host: "dam.inspedralbes.cat",
-  user: "a22jonorevel_usuario",
-  password: "Dam2023+++",
-  database: "a22jonorevel_DatosP1"
-});
+var conexion = null;
 
 const dbConfig = {
   host: "dam.inspedralbes.cat",
@@ -58,39 +53,109 @@ app.post("/postUsuaris", (req, res) => {
 //Fem el camí pel GET
 app.get("/getProductes", (req, res) => {
 
-  
+  conexion = mysql.createConnection({
+    host: "dam.inspedralbes.cat",
+    user: "a22jonorevel_usuario",
+    password: "Dam2023+++",
+    database: "a22jonorevel_DatosP1"
+  });
 
-//Llamo a la conexión
-conexion.connect(function (error) { //Creo la conexión
-  if (error) throw error;
-  else {
+  //Llamo a la conexión
+  conexion.connect(function (error) { 
+   //Creo la conexión
+    if (error) throw error;
+    else {
       console.log("Conexión realizada con éxito!");
       conexion.query("SELECT * FROM productes", function (err, result) {
-          if (err) throw err;
-          if(result){
-              console.log("Se han encontrado ", result.length, " resultados");
-              console.log({result});
-              res.json({result});
-              /*for(var i=0; i< result.length; i++){
-                  var row = result[i];
-                  console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
-              }*/
-          }else{
-              console.log("No se han encontrado resultados");
+        if (err) throw err;
+        if (result) {
+          console.log("Se han encontrado ", result.length, " resultados");
+          console.log({ result });
+          res.json({ result });
+          /*for(var i=0; i< result.length; i++){
+              var row = result[i];
+              console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
+          }*/
+        } else {
+          console.log("No se han encontrado resultados");
+        }
+        conexion.end(function (error) { //Cierro la conexión
+          if (error) {
+            return console.log("Error" + error.message);
           }
-          conexion.end(function (error) { //Cierro la conexión
-              if (error) {
-                  return console.log("Error" + error.message);
-              }
-              console.log("Se cierra la conexión con la base de datos");
-          });   
+          console.log("Se cierra la conexión con la base de datos");
+        });
       });
-  }
+    }
+  });
 });
 
+// app.post("/insertarProducto", (req, res) => {
+//   const { categoria, nom, descripció, preu, url_imatge } = req.body;
 
-})
+//   if (!categoria || !nom || !descripció || !preu || !url_imatge) {
+//     return res.status(400).json({ error: "Faltan datos obligatorios" });
+//   }
 
+//   const conexion = mysql.createConnection(dbConfig);
+
+//   conexion.connect(function (error) {
+//     if (error) {
+//       console.error("Error de conexión:", error);
+//       res.status(500).json({ error: "Error de conexión a la base de datos" });
+//     } else {
+//       console.log("Conexión realizada con éxito!");
+
+//       const insertQuery = `INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES ("${categoria}", "${nom}", "${descripció}", "${preu}", "${url_imatge}")`;
+
+//       conexion.query(insertQuery, [categoria, nom, descripció, preu, url_imatge], function (err, result) {
+//         if (err) {
+//           console.error("Error al insertar en la base de datos:", err);
+//           res.status(500).json({ error: "Error al insertar en la base de datos" });
+//         } else {
+//           console.log("Inserción exitosa!");
+//           res.json({ message: "Inserción exitosa" });
+//         }
+
+//         conexion.end();
+//       });
+//     }
+//   });
+// });
+
+// Función que devuelve una Promesa para la inserción
+function insertarProducto(categoria, nom, descripció, preu, url_imatge) {
+  return new Promise((resolve, reject) => {
+    const conexion = mysql.createConnection(dbConfig);
+
+    conexion.connect(function (error) {
+      if (error) {
+        console.error("Error de conexión:", error);
+        conexion.end();
+        reject("Error de conexión a la base de datos");
+      } else {
+        console.log("Conexión realizada con éxito!");
+
+        // Construye la consulta SQL con los valores
+        const insertQuery = `INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES ("${categoria}", "${nom}", "${descripció}", "${preu}", "${url_imatge}")`;
+
+        conexion.query(insertQuery, [categoria, nom, descripció, preu, url_imatge], function (err, result) {
+          if (err) {
+            console.error("Error al insertar en la base de datos:", err);
+            conexion.end();
+            reject("Error al insertar en la base de datos");
+          } else {
+            console.log("Inserción exitosa!");
+            conexion.end();
+            resolve("Inserción exitosa");
+          }
+        });
+      }
+    });
+  });
+}
+
+// Ruta para la inserción de datos
 app.post("/insertarProducto", (req, res) => {
   const { categoria, nom, descripció, preu, url_imatge } = req.body;
 
@@ -98,30 +163,14 @@ app.post("/insertarProducto", (req, res) => {
     return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
-  const conexion = mysql.createConnection(dbConfig);
-
-  conexion.connect(function (error) {
-    if (error) {
-      console.error("Error de conexión:", error);
-      res.status(500).json({ error: "Error de conexión a la base de datos" });
-    } else {
-      console.log("Conexión realizada con éxito!");
-
-      const insertQuery = `INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES ("${categoria}", "${nom}", "${descripció}", "${preu}", "${url_imatge}")`;
-
-      conexion.query(insertQuery, [categoria, nom, descripció, preu, url_imatge], function (err, result) {
-        if (err) {
-          console.error("Error al insertar en la base de datos:", err);
-          res.status(500).json({ error: "Error al insertar en la base de datos" });
-        } else {
-          console.log("Inserción exitosa!");
-          res.json({ message: "Inserción exitosa" });
-        }
-
-        conexion.end();
-      });
-    }
-  });
+  insertarProducto(categoria, nom, descripció, preu, url_imatge)
+    .then((message) => {
+      res.json({ message });
+    })
+    .catch((error) => {
+      conexion.end();
+      res.status(500).json({ error });
+    });
 });
 
 app.get("/getComandes", (req, res) => {
