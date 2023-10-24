@@ -17,7 +17,7 @@ conexion.connect(function (error) { //Creo la conexión
                 console.log("Se han encontrado ", result.length, " resultados");
                 for(var i=0; i< result.length; i++){
                     var row = result[i];
-                    console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
+                    console.log("ID: ", row.id, ", categoria: ", row.categoria, ", nom: ", row.nom, ", descripcio: ", row.descripció, ", preu: ", row.preu, ", url imagen: ", row.url_imatge);
                 }
             }else{
                 console.log("No se han encontrado resultados");
