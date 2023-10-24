@@ -1,12 +1,20 @@
 {
+  "name": "transversal-tr1-2023-2024-front-back-damtr1g5",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-<<<<<<< HEAD
-    "mysql2": "^3.6.2"
-=======
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "mysql2": "^3.6.2",
     "socket.io": "^4.7.2"
->>>>>>> 0bc4a84602f7fe0dbc9e200b057c3b9d516aaadf
   }
 }
