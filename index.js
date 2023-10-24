@@ -92,9 +92,9 @@ conexion.connect(function (error) { //Creo la conexión
 })
 
 app.post("/insertarProducto", (req, res) => {
-  const { categoria, nom, descripcio, preu, url_imatge } = req.body;
+  const { categoria, nom, descripció, preu, url_imatge } = req.body;
 
-  if (!categoria || !nom || !preu || !url_imatge) {
+  if (!categoria || !nom || !descripció || !preu || !url_imatge) {
     return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
@@ -107,9 +107,9 @@ app.post("/insertarProducto", (req, res) => {
     } else {
       console.log("Conexión realizada con éxito!");
 
-      const insertQuery = "INSERT INTO productes (categoria, nom, descripcio, preu, url_imatge) VALUES (?, ?, ?, ?, ?)";
+      const insertQuery = `INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES ("${categoria}", "${nom}", "${descripció}", "${preu}", "${url_imatge}")`;
 
-      conexion.query(insertQuery, [categoria, nom, descripcio, preu, url_imatge], function (err, result) {
+      conexion.query(insertQuery, [categoria, nom, descripció, preu, url_imatge], function (err, result) {
         if (err) {
           console.error("Error al insertar en la base de datos:", err);
           res.status(500).json({ error: "Error al insertar en la base de datos" });
