@@ -14,11 +14,11 @@ app.listen(PORT, function () {
 });
 
 var mysql = require('mysql2');
-  var conexion = mysql.createConnection({
-    host: "dam.inspedralbes.cat",
-    user: "a22jonorevel_usuario",
-    password: "Dam2023+++",
-    database: "a22jonorevel_DatosP1"
+var conexion = mysql.createConnection({
+  host: "dam.inspedralbes.cat",
+  user: "a22jonorevel_usuario",
+  password: "Dam2023+++",
+  database: "a22jonorevel_DatosP1"
 });
 
 
@@ -32,7 +32,7 @@ app.use(cors({
 }));
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 //POST per consultar els usuaris. És POST i no GET per la encriptació de la Password
 app.post("/postUsuaris", (req, res) => {
 
-    
+
 
 })
 
@@ -51,37 +51,40 @@ app.post("/postUsuaris", (req, res) => {
 //Fem el camí pel GET
 app.get("/getProductes", (req, res) => {
 
-  
-
-//Llamo a la conexión
-conexion.connect(function (error) { //Creo la conexión
-  if (error) throw error;
-  else {
+  //Llamo a la conexión
+  conexion.connect(function (error) { //Creo la conexión
+    if (error) throw error;
+    else {
       console.log("Conexión realizada con éxito!");
       conexion.query("SELECT * FROM productes", function (err, result) {
-          if (err) throw err;
-          if(result){
-              console.log("Se han encontrado ", result.length, " resultados");
-              console.log(result);
-              res.json(result);
-              /*for(var i=0; i< result.length; i++){
-                  var row = result[i];
-                  console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
-              }*/
-          }else{
-              console.log("No se han encontrado resultados");
-          }
+        if (err) throw err;
+        if (result) {
+          console.log("Se han encontrado ", result.length, " resultados");
+          console.log({result});
+          res.json({result});
+          
           conexion.end(function (error) { //Cierro la conexión
-              if (error) {
-                  return console.log("Error" + error.message);
-              }
-              console.log("Se cierra la conexión con la base de datos");
-          });   
+            if (error) {
+              return console.log("Error" + error.message);
+            }
+            console.log("Se cierra la conexión con la base de datos");
+          });       
+          
+          /*for(var i=0; i< result.length; i++){
+              var row = result[i];
+              console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
+          }*/
+        } else {
+          console.log("No se han encontrado resultados");
+        }
+        
+      
+
       });
-  }
-});
-
-
+      
+    }
+  });
+  
 })
 
 app.post("/postProductes", (req, res) => {
@@ -98,6 +101,6 @@ app.get("/getComandes", (req, res) => {
 
 app.post("/postComandes", (req, res) => {
 
-  
+
 
 })
