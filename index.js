@@ -7,10 +7,10 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
 const io = new Server(server);
-const PORT = 3000;
+const PORT = 3001;
 
-server.listen(3000, () => {
-  console.log('server running at http://localhost:3000');
+app.listen(PORT, function () {
+  console.log("SERVER RUNNNIG");
 });
 
 var mysql = require('mysql2');
