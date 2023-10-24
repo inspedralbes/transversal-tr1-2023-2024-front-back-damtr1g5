@@ -21,6 +21,13 @@ var conexion = mysql.createConnection({
   database: "a22jonorevel_DatosP1"
 });
 
+const dbConfig = {
+  host: "dam.inspedralbes.cat",
+  user: "a22jonorevel_usuario",
+  password: "Dam2023+++",
+  database: "a22jonorevel_DatosP1",
+};
+
 
 app.use(express.json());
 
@@ -51,40 +58,37 @@ app.post("/postUsuaris", (req, res) => {
 //Fem el camí pel GET
 app.get("/getProductes", (req, res) => {
 
-  //Llamo a la conexión
-  conexion.connect(function (error) { //Creo la conexión
-    if (error) throw error;
-    else {
+  
+
+//Llamo a la conexión
+conexion.connect(function (error) { //Creo la conexión
+  if (error) throw error;
+  else {
       console.log("Conexión realizada con éxito!");
       conexion.query("SELECT * FROM productes", function (err, result) {
-        if (err) throw err;
-        if (result) {
-          console.log("Se han encontrado ", result.length, " resultados");
-          console.log({result});
-          res.json({result});
-          
+          if (err) throw err;
+          if(result){
+              console.log("Se han encontrado ", result.length, " resultados");
+              console.log(result);
+              res.json(result);
+              /*for(var i=0; i< result.length; i++){
+                  var row = result[i];
+                  console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
+              }*/
+          }else{
+              console.log("No se han encontrado resultados");
+          }
           conexion.end(function (error) { //Cierro la conexión
-            if (error) {
-              return console.log("Error" + error.message);
-            }
-            console.log("Se cierra la conexión con la base de datos");
-          });       
-          
-          /*for(var i=0; i< result.length; i++){
-              var row = result[i];
-              console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
-          }*/
-        } else {
-          console.log("No se han encontrado resultados");
-        }
-        
-      
-
+              if (error) {
+                  return console.log("Error" + error.message);
+              }
+              console.log("Se cierra la conexión con la base de datos");
+          });   
       });
-      
-    }
-  });
-  
+  }
+});
+
+
 })
 
 app.post("/postProductes", (req, res) => {
@@ -97,10 +101,10 @@ app.get("/getComandes", (req, res) => {
 
   res.json(respostes_JSON);
 
-})
+});
 
 app.post("/postComandes", (req, res) => {
 
 
 
-})
+});
