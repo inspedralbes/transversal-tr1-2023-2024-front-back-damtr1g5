@@ -57,70 +57,45 @@ app.post("/postUsuaris", (req, res) => {
 
 //Fem el camí pel GET
 app.get("/getProductes", (req, res) => {
-  //Llamo a la conexión
-  conexion.connect(function (error) { //Creo la conexión
-    if (error) throw error;
-    else {
+
+  
+
+//Llamo a la conexión
+conexion.connect(function (error) { //Creo la conexión
+  if (error) throw error;
+  else {
       console.log("Conexión realizada con éxito!");
       conexion.query("SELECT * FROM productes", function (err, result) {
-        if (err) throw err;
-        if (result) {
-          console.log("Se han encontrado ", result.length, " resultados");
-          console.log(result);
-          res.json(result);
-          /*for(var i=0; i< result.length; i++){
-              var row = result[i];
-              console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
-          }*/
-        } else {
-          console.log("No se han encontrado resultados");
-        }
-        conexion.end(function (error) { //Cierro la conexión
-          if (error) {
-            return console.log("Error" + error.message);
+          if (err) throw err;
+          if(result){
+              console.log("Se han encontrado ", result.length, " resultados");
+              console.log(result);
+              res.json(result);
+              /*for(var i=0; i< result.length; i++){
+                  var row = result[i];
+                  console.log("ID: ", row.id, ", categoria: ", row.categoria, " nom: ", row.nom, " descripcio: ", row.descripció, " preu: ", row.preu, " url imagen ", row.url_imatge);
+              }*/
+          }else{
+              console.log("No se han encontrado resultados");
           }
-          console.log("Se cierra la conexión con la base de datos");
-        });
+          conexion.end(function (error) { //Cierro la conexión
+              if (error) {
+                  return console.log("Error" + error.message);
+              }
+              console.log("Se cierra la conexión con la base de datos");
+          });   
       });
-    }
-  });
-});
-
-// Ruta para la inserción de datos
-app.post("/insertarProducto", (req, res) => {
-  //No incluyo la id del producto porque en la base de datos la tengo puesta "auto_increment"
-  //A la hora de hacer un insert, agrega un id automático del producto
-  const { categoria, nom, descripcio, preu, url_imatge } = req.body;
-
-  if (!categoria || !nom || !preu || !url_imatge) {
-    return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
-
-  const conexion = mysql.createConnection(dbConfig);
-
-  conexion.connect(function (error) {
-    if (error) {
-      console.error("Error de conexión:", error);
-      res.status(500).json({ error: "Error de conexión a la base de datos" });
-    } else {
-      console.log("Conexión realizada con éxito!");
-
-      const insertQuery = "INSERT INTO productes (categoria, nom, descripcio, preu, url_imatge) VALUES (?, ?, ?, ?, ?)";
-
-      conexion.query(insertQuery, [categoria, nom, descripcio, preu, url_imatge], function (err, result) {
-        if (err) {
-          console.error("Error al insertar en la base de datos:", err);
-          res.status(500).json({ error: "Error al insertar en la base de datos" });
-        } else {
-          console.log("Inserción exitosa!");
-          res.json({ message: "Inserción exitosa" });
-        }
-
-        conexion.end();
-      });
-    }
-  });
 });
+
+
+})
+
+app.post("/postProductes", (req, res) => {
+
+  
+
+})
 
 app.get("/getComandes", (req, res) => {
 
