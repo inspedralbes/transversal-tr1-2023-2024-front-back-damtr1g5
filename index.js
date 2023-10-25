@@ -153,7 +153,7 @@ function insertarProducto(categoria, nom, descripció, preu, url_imatge) {
       }
     });
   });
-}
+};
 
 // Ruta para la inserción de datos
 app.post("/insertarProducto", (req, res) => {
@@ -172,6 +172,40 @@ app.post("/insertarProducto", (req, res) => {
       res.status(500).json({ error });
     });
 });
+
+app.post("/eliminarProducto", (req, res) => {
+  const productoId = req.body.productoId;
+
+  if (!productoId) {
+    return res.status(400).json({ error: "Falta el ID del producto" });
+  }
+
+  conexion = mysql.createConnection(dbConfig);
+
+  conexion.connect(function (error) {
+    if (error) {
+      console.error("Error de conexión:", error);
+      res.status(500).json({ error: "Error de conexión a la base de datos" });
+    } else {
+      console.log("Conexión realizada con éxito!");
+
+      const deleteQuery = `DELETE FROM productes WHERE id = ${productoId}`;
+
+      conexion.query(deleteQuery, [productoId], function (err, result) {
+        if (err) {
+          console.error("Error al eliminar el producto:", err);
+          res.status(500).json({ error: "Error al eliminar el producto" });
+        } else {
+          console.log("Eliminación exitosa!");
+          res.json({ message: "Eliminación exitosa" });
+        }
+
+        conexion.end();
+      });
+    }
+  });
+});
+
 
 app.get("/getComandes", (req, res) => {
 
