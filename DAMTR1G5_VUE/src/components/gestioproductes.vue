@@ -30,12 +30,13 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-btn @click="ver_info = false">Tancar</v-btn>
-                        <v-btn  @click="deleteProductes(selected_productes.id), ver_info = false" style="color: red;">Esborrar producte</v-btn>
+                        <v-btn @click="deleteProductes(selected_productes.id), ver_info = false"
+                            style="color: red;">Esborrar producte</v-btn>
                         <v-btn>Editar Producte</v-btn>
                     </v-card-actions>
                 </v-card>
-            </v-dialog>
-            <div v-if="verAfegirProducte">
+            </v-dialog >
+            <v-dialog v-model="verAfegirProducte" max-width="400">
                 <v-card>
                     <v-card-title>Afegir Producte</v-card-title>
                     <v-card-text>
@@ -50,12 +51,13 @@
                         <v-btn @click="verAfegirProducte = false">Cancelar</v-btn>
                     </v-card-actions>
                 </v-card>
-            </div>
+            </v-dialog>
         </v-main>
     </v-layout>
 </template>
   
 <script>
+import axios from 'axios'
 import { getProductes, addProducte, deleteProducte } from '@/services/communicationsManager'
 export default {
     data() {
@@ -117,10 +119,12 @@ export default {
                 "preu": null,
                 "url_imatge": null,
             };
+            this.verAfegirProducte = false;
         },
+
         deleteProductes(id) {
             deleteProducte(id)
-            .then(() => {
+                .then(() => {
                     return getProductes();
                 })
                 .then((response) => {
@@ -129,7 +133,7 @@ export default {
                 .catch((error) => {
                     console.error('Error al agregar producto:', error);
                 });
-            
+
             //location.reload();
 
         }

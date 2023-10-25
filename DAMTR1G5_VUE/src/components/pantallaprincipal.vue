@@ -5,13 +5,13 @@
             <v-app-bar title="Panell de control"></v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-card text="Gestió Productes">
-                    <img :src="`http://localhost:3001/${imatge_producte.jpg}`" style="height: 250px; width: 250px;">
+                    <img :src="imatgeProductes" style="height: 250px; width: 250px;">
                     <v-card-actions>
                         <v-btn @click="irProductes">Productes</v-btn>
                     </v-card-actions>
                 </v-card>
                 <v-card text="Gestió Comandes">
-                    <img :src="`http://localhost:3001/${imatge_comandes.jpg}`" style="height: 250px; width: 250px;">
+                    <img :src="imatgeComandes" style="height: 250px; width: 250px;">
                     <v-card-actions>
                         <v-btn @click="irComandes">Comandes</v-btn>
                     </v-card-actions>
@@ -27,6 +27,8 @@
 export default {
     data() {
         return {
+            imatgeProductes: 'http://localhost:3001/imatge_productes.jpg',
+            imatgeComandes: 'http://localhost:3001/imatge_comandes.jpg'
             
 
         }
