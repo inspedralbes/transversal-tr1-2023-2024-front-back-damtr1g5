@@ -30,7 +30,7 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-btn @click="ver_info = false">Tancar</v-btn>
-                        <v-btn style="color: red;">Esborrar producte</v-btn>
+                        <v-btn  @click="deleteProductes(selected_productes.id), ver_info = false" style="color: red;">Esborrar producte</v-btn>
                         <v-btn>Editar Producte</v-btn>
                     </v-card-actions>
                 </v-card>
@@ -56,7 +56,7 @@
 </template>
   
 <script>
-import { getProductes, addProducte } from '@/services/communicationsManager'
+import { getProductes, addProducte, deleteProducte } from '@/services/communicationsManager'
 export default {
     data() {
         return {
@@ -98,7 +98,6 @@ export default {
             this.verAfegirProducte = true;
         },
         addProductes() {
-
             addProducte(this.nuevo_producte)
                 .then(() => {
                     return getProductes();
@@ -119,6 +118,21 @@ export default {
                 "url_imatge": null,
             };
         },
+        deleteProductes(id) {
+            deleteProducte(id)
+            .then(() => {
+                    return getProductes();
+                })
+                .then((response) => {
+                    this.productes = response;
+                })
+                .catch((error) => {
+                    console.error('Error al agregar producto:', error);
+                });
+            
+            //location.reload();
+
+        }
 
 
     }
