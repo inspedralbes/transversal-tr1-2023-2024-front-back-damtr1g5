@@ -239,7 +239,7 @@ function eliminarProducto(productoId) { //CON PROMISE
   });
 }
 
-app.post("/eliminarProducto", (req, res) => { //CON PROMISE
+app.delete("/eliminarProducto", (req, res) => { //CON PROMISE
   const productoId = req.body.productoId;
 
   if (!productoId) {
