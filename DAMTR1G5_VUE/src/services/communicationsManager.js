@@ -8,6 +8,22 @@ export async function getProductes() {
 
 export async function addProducte(dadesProducte) {
     console.log("datos recibidos: " + dadesProducte)
+
+    const nombreProducto = dadesProducte.nom.replace(/ /g, '_');
+
+
+    // Primero, guarda la imagen en el servidor
+    await axios.post('http://localhost:3001/descargarImagen', {
+        url: dadesProducte.url_imatge,
+        nombreProducto: nombreProducto,
+    })
+        .then(response => {
+            console.log(response.data.message);
+        })
+        .catch(error => {
+            console.error('Error al descargar la imagen:', error);
+        });
+
     const response = await fetch(`http://localhost:3001/insertarProducto`,
         {
             method: 'POST', headers: {

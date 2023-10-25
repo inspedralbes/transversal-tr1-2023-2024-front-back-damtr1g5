@@ -35,7 +35,7 @@
                         <v-btn>Editar Producte</v-btn>
                     </v-card-actions>
                 </v-card>
-            </v-dialog >
+            </v-dialog>
             <v-dialog v-model="verAfegirProducte" max-width="400">
                 <v-card>
                     <v-card-title>Afegir Producte</v-card-title>
@@ -100,28 +100,36 @@ export default {
             this.verAfegirProducte = true;
         },
         addProductes() {
-            addProducte(this.nuevo_producte)
-                .then(() => {
-                    return getProductes();
+            // Verifica si la URL de la imagen es válida
+            if (!this.nuevo_producte.url_imatge) {
+                console.error('URL de imagen no válida');
+                return;
+            }
+
+            axios.post('http://localhost:3001/descargarImagen', {
+                url: this.nuevo_producte.url_imatge,
+                nombreProducto: this.nuevo_producte.nom,
+            })
+                .then(response => {
+                    console.log(response.data.message);
+
                 })
-                .then((response) => {
-                    this.productes = response;
-                })
-                .catch((error) => {
-                    console.error('Error al agregar producto:', error);
+                .catch(error => {
+                    console.error('Error al descargar la imagen:', error);
                 });
 
+            // Limpia el campo de URL y cierra el diálogo
+            this.nuevo_producte.url_imatge = '';
             this.nuevo_producte = {
-                "id": null,
-                "categoria": null,
-                "nom": null,
-                "descripció": null,
-                "preu": null,
-                "url_imatge": null,
+                id: null,
+                categoria: null,
+                nom: null,
+                descripció: null,
+                preu: null,
+                url_imatge: null,
             };
             this.verAfegirProducte = false;
         },
-
         deleteProductes(id) {
             deleteProducte(id)
                 .then(() => {
