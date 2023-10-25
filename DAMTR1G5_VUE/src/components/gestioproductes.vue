@@ -47,8 +47,8 @@
                         <v-text-field v-model="nuevo_producte.url_imatge" label="URL de la imatge"></v-text-field>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn @click="addProductes">Agregar Producte</v-btn>
-                        <v-btn @click="verAfegirProducte = false">Cancelar</v-btn>
+                        <v-btn style="color: green;" @click="addProductes">Afegir Producte</v-btn>
+                        <v-btn style="color: red;" @click="verAfegirProducte = false">Cancelar</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
