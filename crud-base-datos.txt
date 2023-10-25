@@ -1,0 +1,57 @@
+CREATE TABLE comanda (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    descripció VARCHAR(255),
+    quantitat INT
+);
+
+CREATE TABLE productes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    categoria VARCHAR(255),
+    nom VARCHAR(255),
+    descripció VARCHAR(255),
+    preu DECIMAL(10, 2),  -- Decimal per emmagatzemar 10 dígits, 2 d'ells per als decimals
+    url_imatge VARCHAR(255)  -- Canvi en el nom de la columna
+);
+
+CREATE TABLE comanda_productes (
+    comanda_id INT,
+    producte_id INT,
+    PRIMARY KEY (comanda_id, producte_id),
+    FOREIGN KEY (comanda_id) REFERENCES comanda(id),
+    FOREIGN KEY (producte_id) REFERENCES productes(id)
+);
+
+CREATE TABLE usuaris (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255),
+    cognoms VARCHAR(255),
+    contrasenya VARCHAR(255),
+    dades_targeta VARCHAR(255),
+    comanda_id INT,
+    FOREIGN KEY (comanda_id) REFERENCES comanda(id)
+);
+
+
+-- Insertar datos en la tabla "productes"
+INSERT INTO productes (id, categoria, nom, descripció, preu, url_imatge)
+VALUES
+  (1, 'Pizzes', 'Pizza Margherita', 'Pizza de tomàquet, mozzarella i alfàbrega fresca', 9.99, 'pizza_margarita.jpg'),
+  (2, 'Pizzes', 'Pizza Quatre Formatges', 'Pizza amb formatge blau, mozzarella, formatge de cabra i parmesà', 11.50, 'pizza_quatre_formatges.jpg'),
+  (3, 'Pizzes', 'Pizza Diavola', 'Pizza de tomàquet, mozzarella, salamí picant i pebrots', 10.95, 'pizza_diavola.jpg'),
+  (4, 'Pastes', 'Llaminadures de Pasta Alfredo', 'Pasta amb salsa Alfredo i brots de bròquil', 12.75, 'pasta_salsa_alfredo.jpg'),
+  (5, 'Pastes', 'Lasanya Clàssica', 'Lasanya amb carn de vedella, mozzarella i salsa de tomàquet', 13.99, 'lasanya_classica.jpg'),
+  (6, 'Pastes', 'Pasta Pesto Genovès', 'Pasta amb salsa pesto, pinyons i formatge parmesà', 11.25, 'pasta_pesto_genoves.jpg'),
+  (7, 'Postres', 'Tiramisú', 'Pastís de formatge mascarpone amb cafè i cacau', 6.50, 'tiramisu.jpg'),
+  (8, 'Postres', 'Panna Cotta', 'Postre italià amb crema i fruita vermella', 5.95, 'panna_cota.jpg'),
+  (9, 'Begudes', 'Vi Chianti', 'Vi tret de la regió de la Toscana', 16.50, 'vi_chianti.jpg'),
+  (10, 'Begudes', 'Aigua amb gas', 'Aigua amb gas embotellada', 2.00, 'aigua_amb_gas.jpg'),
+  (11, 'Pizzes', 'Pizza Vegetariana', 'Pizza amb verdures fresques i mozzarella', 10.50, 'pizza_vegetariana.jpeg'),
+  (12, 'Pastes', 'Pasta Carbonara', 'Pasta amb ou, formatge parmesà i bacó', 11.75, 'pasta_carbonara.jpg'),
+  (13, 'Postres', 'Gelat de Vainilla', 'Gelat de vainilla amb cobertura de xocolata', 4.25, 'gelat_vainilla.jpeg'),
+  (14, 'Begudes', 'Cervesa Peroni', 'Cervesa italiana Peroni', 3.75, 'cervesa_peroni.png'),
+  (15, 'Pizzes', 'Pizza Calzone', 'Pizza tancada farcida de tomàquet, mozzarella i pebrot verd', 11.95, 'https://exemple.com/imatge/pizza_calzone.jpg'),
+  (16, 'Pastes', 'Pasta Frutti di Mare', 'Pasta amb fruita de mar i salsa de tomàquet', 14.50, 'pasta_frutti_di_mare.jpg'),
+  (17, 'Postres', 'Cannoli Siciliani', 'Tubs de pastisseria farcits de crema de formatge ricotta', 7.25, 'cannoli_siciliani.jpg'),
+  (18, 'Begudes', 'Llimonada Casolana', 'Llimonada fresca feta a casa', 3.50, 'llimonada_casolana.jpg'),
+  (19, 'Pizzes', 'Pizza Pepperoni', 'Pizza amb mozzarella i rodanxes de peperoni', 10.25, 'pizza_pepperoni.jpeg'),
+  (20, 'Pastes', 'Pasta Primavera', 'Pasta amb verdures de primavera i salsa de crema', 12.25, 'pasta_primavera.jpg');
