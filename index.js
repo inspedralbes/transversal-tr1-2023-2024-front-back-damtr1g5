@@ -175,7 +175,7 @@ app.post("/insertarProducto", (req, res) => {
     });
 });
 
-app.post("/eliminarProducto", (req, res) => {
+app.post("/eliminarProducto", (req, res) => { //SIN PROMISE
   const productoId = req.body.productoId;
 
   if (!productoId) {
@@ -207,6 +207,54 @@ app.post("/eliminarProducto", (req, res) => {
     }
   });
 });
+
+function eliminarProducto(productoId) { //CON PROMISE
+  return new Promise((resolve, reject) => {
+    const conexion = mysql.createConnection(dbConfig);
+
+    conexion.connect(function (error) {
+      if (error) {
+        console.error("Error de conexión:", error);
+        conexion.end();
+        reject("Error de conexión a la base de datos");
+      } else {
+        console.log("Conexión realizada con éxito!");
+
+        // Construye la consulta SQL con el valor del ID del producto
+        const deleteQuery = `DELETE FROM productes WHERE id = ${productoId}`;
+
+        conexion.query(deleteQuery, function (err, result) {
+          if (err) {
+            console.error("Error al eliminar el producto:", err);
+            conexion.end();
+            reject("Error al eliminar el producto");
+          } else {
+            console.log("Eliminación exitosa!");
+            conexion.end();
+            resolve("Eliminación exitosa");
+          }
+        });
+      }
+    });
+  });
+}
+
+app.post("/eliminarProducto", (req, res) => { //CON PROMISE
+  const productoId = req.body.productoId;
+
+  if (!productoId) {
+    return res.status(400).json({ error: "Falta el ID del producto" });
+  }
+
+  eliminarProducto(productoId)
+    .then((message) => {
+      res.json({ message });
+    })
+    .catch((error) => {
+      res.status(500).json({ error });
+    });
+});
+
 
 
 app.get("/getComandes", (req, res) => {
