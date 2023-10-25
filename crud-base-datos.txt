@@ -1,32 +1,29 @@
 CREATE TABLE comanda (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    descripció VARCHAR(255),
-    quantitat INT
+    quantitat INT,
+    id_usuari INT,
+    entrega TIME,
+    FOREIGN KEY (id_usuari) REFERENCES usuaris (id)
 );
 
 CREATE TABLE productes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT,
     categoria VARCHAR(255),
     nom VARCHAR(255),
     descripció VARCHAR(255),
     preu DECIMAL(10, 2),  -- Decimal per emmagatzemar 10 dígits, 2 d'ells per als decimals
     url_imatge VARCHAR(255)  -- Canvi en el nom de la columna
+    PRIMARY KEY (id, categoria)
 );
 
 CREATE TABLE comanda_productes (
     comanda_id INT,
     producte_id INT,
-    descripció_comanda VARCHAR(255),
-    quantitat INT,
     categoria VARCHAR(255),
-    nom VARCHAR(255),
-    descripció_producte VARCHAR(255),
-    preu DECIMAL(10, 2),  -- Decimal per emmagatzemar 10 dígits, 2 d'ells per als decimals
-    url_imatge VARCHAR(255),  -- Canvi en el nom de la columna
-    PRIMARY KEY (comanda_id, producte_id),
+    PRIMARY KEY (comanda_id, producte_id, categoria),
     FOREIGN KEY (comanda_id) REFERENCES comanda (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (producte_id) REFERENCES productes (id) ON DELETE CASCADE ON UPDATE CASCADE
-    );
+    FOREIGN KEY (producte_id,categoria) REFERENCES productes (id,categoria) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 CREATE TABLE usuaris (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -60,3 +57,9 @@ VALUES
   (18, 'Begudes', 'Llimonada Casolana', 'Llimonada fresca feta a casa', 3.50, 'llimonada_casolana.jpg'),
   (19, 'Pizzes', 'Pizza Pepperoni', 'Pizza amb mozzarella i rodanxes de peperoni', 10.25, 'pizza_pepperoni.jpeg'),
   (20, 'Pastes', 'Pasta Primavera', 'Pasta amb verdures de primavera i salsa de crema', 12.25, 'pasta_primavera.jpg');
+
+INSERT INTO usuaris VALUES (1,'Pepe','Garcia Fernandez','1234','ES879121');
+
+INSERT INTO comanda VALUES (1,4,1,NULL);
+
+INSERT INTO comanda_productes VALUES (1,1,'Pizzes');

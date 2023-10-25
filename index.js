@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const server = createServer(app);
 const io = new Server(server);
 const PORT = 3001;
+var spawn = require("child_process").spawn;
 
 app.listen(PORT, function () {
   console.log("SERVER RUNNNIG");
@@ -63,8 +64,8 @@ app.get("/getProductes", (req, res) => {
   });
 
   //Llamo a la conexión
-  conexion.connect(function (error) { 
-   //Creo la conexión
+  conexion.connect(function (error) {
+    //Creo la conexión
     if (error) throw error;
     else {
       console.log("Conexión realizada con éxito!");
@@ -268,3 +269,54 @@ app.post("/postComandes", (req, res) => {
 
 
 });
+
+
+
+//Agafar informació per estadístiques
+app.get("/getEstadistiques", (req, res) => {
+
+  conexion = mysql.createConnection({
+    host: "dam.inspedralbes.cat",
+    user: "a22jonorevel_usuario",
+    password: "Dam2023+++",
+    database: "a22jonorevel_DatosP1"
+  });
+
+  //Llamo a la conexión
+  conexion.connect(function (error) {
+    //Creo la conexión
+    if (error) throw error;
+    else {
+      console.log("Conexión realizada con éxito!");
+      conexion.query("SELECT * FROM comanda_productes ", function (err, result) {
+        if (err) throw err;
+        if (result) {
+          console.log("Se han encontrado ", result.length, " resultados");
+          console.log({ result });
+
+          var process = spawn('python', ["./estadistiques.py", JSON.stringify({ result })]);
+          let dades;
+
+          process.stdout.on('data', function (data) {
+            console.log("data:", data);
+            console.log(data.toString());
+            dades = data.toString();
+          })
+          process.on('close', (code) => {
+            res.send(dades);
+          })
+
+        } else {
+          console.log("No se han encontrado resultados");
+        }
+        conexion.end(function (error) { //Cierro la conexión
+          if (error) {
+            return console.log("Error" + error.message);
+          }
+          console.log("Se cierra la conexión con la base de datos");
+        });
+      });
+    }
+  });
+
+})
