@@ -13,6 +13,8 @@ app.listen(PORT, function () {
   console.log("SERVER RUNNNIG");
 });
 
+app.use(express.static("imatges_productes"))
+
 var mysql = require('mysql2');
 var conexion = null;
 
