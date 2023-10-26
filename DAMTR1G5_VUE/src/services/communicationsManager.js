@@ -39,9 +39,9 @@ export async function deleteProducte(id) {
 export async function updateProducte(dadesEdicio){
     console.log("datos recibidos: " + dadesEdicio)
 
-    const response = await fetch(`http://localhost:3001/`,
+    const response = await fetch(`http://localhost:3001/actualizarProducto`,
         {
-            method: 'PUT', headers: {
+            method: 'POST', headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(dadesEdicio)

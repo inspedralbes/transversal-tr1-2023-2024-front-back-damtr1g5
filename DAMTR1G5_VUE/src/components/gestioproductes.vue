@@ -32,7 +32,7 @@
                         <v-btn @click="ver_info = false">Tancar</v-btn>
                         <v-btn @click="deleteProductes(selected_productes.id), ver_info = false"
                             style="color: red;">Esborrar producte</v-btn>
-                        <v-btn @click="verEditar(selected_productes.id)">Editar Producte</v-btn>
+                        <v-btn @click="verEditar(selected_productes)">Editar Producte</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -40,7 +40,7 @@
                 <v-card>
                     <v-card-title>Afegir Producte</v-card-title>
                     <v-card-text>
-                        <v-text-field v-model="nuevo_producte.categoria" label="Categoria"></v-text-field>
+                        <v-select v-model="nuevo_producte.categoria" :items="categories" label="Categoria"></v-select>
                         <v-text-field v-model="nuevo_producte.nom" label="Nom"></v-text-field>
                         <v-text-field v-model="nuevo_producte.descripció" label="Descripció"></v-text-field>
                         <v-text-field v-model="nuevo_producte.preu" label="Preu"></v-text-field>
@@ -56,14 +56,14 @@
                 <v-card>
                     <v-card-title>Editar Producte</v-card-title>
                     <v-card-text>
-                        <v-text-field v-model="producte_editado.categoria" label="Categoria"></v-text-field>
+                        <v-select v-model="producte_editado.categoria" :items="categories" label="Categoria"></v-select>
                         <v-text-field v-model="producte_editado.nom" label="Nom"></v-text-field>
                         <v-text-field v-model="producte_editado.descripció" label="Descripció"></v-text-field>
                         <v-text-field v-model="producte_editado.preu" label="Preu"></v-text-field>
                         <v-text-field v-model="producte_editado.url_imatge" label="URL de la imatge"></v-text-field>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn style="color: green;" @click="actualizarProducte">Editar Producte</v-btn>
+                        <v-btn style="color: green;" @click="actualizarProducte(producte_editado)">Editar Producte</v-btn>
                         <v-btn style="color: red;" @click="vereditarProducte = false">Cancelar</v-btn>
                     </v-card-actions>
                 </v-card>
@@ -74,7 +74,7 @@
   
 <script>
 import axios from 'axios'
-import { getProductes, addProducte, deleteProducte } from '@/services/communicationsManager'
+import { getProductes, addProducte, deleteProducte, updateProducte } from '@/services/communicationsManager'
 export default {
     data() {
         return {
@@ -83,6 +83,7 @@ export default {
             ver_info: null,
             verAfegirProducte: false,
             vereditarProducte: false,
+            categories: ["Postres", "Begudes", "Pastes", "Pizzes"],
             selected_productes: {},
             nuevo_producte: {
                 "id": null,
@@ -130,8 +131,17 @@ export default {
         verFormulari() {
             this.verAfegirProducte = true;
         },
-        verEditar() {
+        verEditar(producte) {
             this.vereditarProducte = true;
+            
+            this.producte_editado = {
+                id: producte.id,
+                categoria: producte.categoria,
+                nom: producte.nom,
+                descripció: producte.descripció,
+                preu: producte.preu,
+                url_imatge: producte.url_imatge,
+            };
         },
         addProductes() {
             addProducte(this.nuevo_producte)
@@ -182,15 +192,9 @@ export default {
                 .catch((error) => {
                     console.error('Error al editar producte:', error);
                 });
-            this.producte_editado = {
-                "id": null,
-                "categoria": null,
-                "nom": null,
-                "descripció": null,
-                "preu": null,
-                "url_imatge": null,
-            };
+            
             this.vereditarProducte = false;
+            this.ver_info = false;
         },
 
 
