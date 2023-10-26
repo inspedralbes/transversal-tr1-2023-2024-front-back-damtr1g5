@@ -256,6 +256,47 @@ app.delete("/eliminarProducto", (req, res) => { //CON PROMISE
     });
 });
 
+app.post("/actualizarProducto", (req, res) => {
+  const productoId = req.body.productoId;
+  const nuevaCategoria = req.body.nuevaCategoria;
+  const nuevoNombre = req.body.nuevoNombre;
+  const nuevaDescripcion = req.body.nuevaDescripcion;
+  const nuevoPrecio = req.body.nuevoPrecio;
+  const nuevaUrlImagen = req.body.nuevaUrlImagen;
+
+  if (!productoId) {
+    return res.status(400).json({ error: "Falta el ID del producto" });
+  }
+
+  const conexion = mysql.createConnection(dbConfig);
+
+  conexion.connect(function (error) {
+    if (error) {
+      console.error("Error de conexión:", error);
+      res.status(500).json({ error: "Error de conexión a la base de datos" });
+    } else {
+      console.log("Conexión realizada con éxito!");
+
+      const updateQuery = `UPDATE productes 
+                           SET categoria = "${nuevaCategoria}", nom = "${nuevoNombre}", descripció = "${nuevaDescripcion}", preu = "${nuevoPrecio}", url_imatge = "${nuevaUrlImagen}" 
+                           WHERE id = ${productoId}`;
+
+      conexion.query(updateQuery, function (err, result) {
+        if (err) {
+          console.error("Error al actualizar el producto:", err);
+          res.status(500).json({ error: "Error al actualizar el producto" });
+        } else {
+          console.log("Actualización exitosa!");
+          res.json({ message: "Actualización exitosa" });
+        }
+
+        conexion.end();
+      });
+    }
+  });
+});
+
+
 
 
 app.get("/getComandes", (req, res) => {
