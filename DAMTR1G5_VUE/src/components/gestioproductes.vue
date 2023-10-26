@@ -12,7 +12,7 @@
                 <v-row>
                     <v-col v-for="producte in productes.result" :key="producte.id" cols="3">
                         <v-card>
-                            <v-img :src="`http://localhost:3001/${producte.url_imatge}`" height="300"></v-img>
+                            <v-img :src="getImageSource(producte)" height="300"></v-img>
                             <v-text>{{ producte.nom }}</v-text><br>
                             <v-btn @click="verInfo(producte)">Más info</v-btn>
                         </v-card>
@@ -32,7 +32,7 @@
                         <v-btn @click="ver_info = false">Tancar</v-btn>
                         <v-btn @click="deleteProductes(selected_productes.id), ver_info = false"
                             style="color: red;">Esborrar producte</v-btn>
-                        <v-btn>Editar Producte</v-btn>
+                        <v-btn @click="verEditar(selected_productes.id)">Editar Producte</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -52,6 +52,22 @@
                     </v-card-actions>
                 </v-card>
             </v-dialog>
+            <v-dialog v-model="vereditarProducte" max-width="400">
+                <v-card>
+                    <v-card-title>Editar Producte</v-card-title>
+                    <v-card-text>
+                        <v-text-field v-model="producte_editado.categoria" label="Categoria"></v-text-field>
+                        <v-text-field v-model="producte_editado.nom" label="Nom"></v-text-field>
+                        <v-text-field v-model="producte_editado.descripció" label="Descripció"></v-text-field>
+                        <v-text-field v-model="producte_editado.preu" label="Preu"></v-text-field>
+                        <v-text-field v-model="producte_editado.url_imatge" label="URL de la imatge"></v-text-field>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn style="color: green;" @click="actualizarProducte">Editar Producte</v-btn>
+                        <v-btn style="color: red;" @click="vereditarProducte = false">Cancelar</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-main>
     </v-layout>
 </template>
@@ -66,6 +82,7 @@ export default {
             mostrar_productes: null,
             ver_info: null,
             verAfegirProducte: false,
+            vereditarProducte: false,
             selected_productes: {},
             nuevo_producte: {
                 "id": null,
@@ -74,7 +91,15 @@ export default {
                 "descripció": null,
                 "preu": null,
                 "url_imatge": null,
-            }
+            },
+            producte_editado: {
+                "id": null,
+                "categoria": null,
+                "nom": null,
+                "descripció": null,
+                "preu": null,
+                "url_imatge": null,
+            },
 
         }
     },
@@ -85,6 +110,12 @@ export default {
         })
     },
     methods: {
+        getImageSource(producte) {
+            if (producte.url_imatge && !producte.url_imatge.startsWith('http')) {
+                return `http://localhost:3001/${producte.url_imatge}`;
+            }
+            return producte.url_imatge;
+        },
         irComandes() {
             this.$router.push("/gestiocomandes")
         },
@@ -99,37 +130,32 @@ export default {
         verFormulari() {
             this.verAfegirProducte = true;
         },
+        verEditar() {
+            this.vereditarProducte = true;
+        },
         addProductes() {
-            // Verifica si la URL de la imagen es válida
-            if (!this.nuevo_producte.url_imatge) {
-                console.error('URL de imagen no válida');
-                return;
-            }
-
-            axios.post('http://localhost:3001/descargarImagen', {
-                url: this.nuevo_producte.url_imatge,
-                nombreProducto: this.nuevo_producte.nom,
-            })
-                .then(response => {
-                    console.log(response.data.message);
-
+            addProducte(this.nuevo_producte)
+                .then(() => {
+                    return getProductes();
                 })
-                .catch(error => {
-                    console.error('Error al descargar la imagen:', error);
+                .then((response) => {
+                    this.productes = response;
+                })
+                .catch((error) => {
+                    console.error('Error al agregar producto:', error);
                 });
 
-            // Limpia el campo de URL y cierra el diálogo
-            this.nuevo_producte.url_imatge = '';
             this.nuevo_producte = {
-                id: null,
-                categoria: null,
-                nom: null,
-                descripció: null,
-                preu: null,
-                url_imatge: null,
+                "id": null,
+                "categoria": null,
+                "nom": null,
+                "descripció": null,
+                "preu": null,
+                "url_imatge": null,
             };
             this.verAfegirProducte = false;
         },
+
         deleteProductes(id) {
             deleteProducte(id)
                 .then(() => {
@@ -144,7 +170,28 @@ export default {
 
             //location.reload();
 
-        }
+        },
+        actualizarProducte() {
+            updateProducte(this.producte_editado)
+                .then(() => {
+                    return getProductes();
+                })
+                .then((response) => {
+                    this.productes = response;
+                })
+                .catch((error) => {
+                    console.error('Error al editar producte:', error);
+                });
+            this.producte_editado = {
+                "id": null,
+                "categoria": null,
+                "nom": null,
+                "descripció": null,
+                "preu": null,
+                "url_imatge": null,
+            };
+            this.vereditarProducte = false;
+        },
 
 
     }
