@@ -7,22 +7,20 @@ CREATE TABLE comanda (
 );
 
 CREATE TABLE productes (
-    id INT AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     categoria VARCHAR(255),
     nom VARCHAR(255),
     descripció VARCHAR(255),
     preu DECIMAL(10, 2),  -- Decimal per emmagatzemar 10 dígits, 2 d'ells per als decimals
     url_imatge VARCHAR(255)  -- Canvi en el nom de la columna
-    PRIMARY KEY (id, categoria)
 );
 
 CREATE TABLE comanda_productes (
     comanda_id INT,
-    producte_id INT,
-    categoria VARCHAR(255),
-    PRIMARY KEY (comanda_id, producte_id, categoria),
+    producte_id INT,   
+    PRIMARY KEY (comanda_id, producte_id),
     FOREIGN KEY (comanda_id) REFERENCES comanda (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (producte_id,categoria) REFERENCES productes (id,categoria) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (producte_id) REFERENCES productes (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE usuaris (
@@ -62,4 +60,4 @@ INSERT INTO usuaris VALUES (1,'Pepe','Garcia Fernandez','1234','ES879121');
 
 INSERT INTO comanda VALUES (1,4,1,NULL);
 
-INSERT INTO comanda_productes VALUES (1,1,'Pizzes');
+INSERT INTO comanda_productes VALUES (1,1);

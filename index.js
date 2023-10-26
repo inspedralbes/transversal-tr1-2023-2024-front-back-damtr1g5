@@ -288,24 +288,29 @@ app.get("/getEstadistiques", (req, res) => {
     if (error) throw error;
     else {
       console.log("Conexión realizada con éxito!");
-      conexion.query("SELECT * FROM comanda_productes ", function (err, result) {
+      conexion.query("SELECT * FROM comanda_productes JOIN productes ON (comanda_productes.producte_id=productes.id) ", function (err, result) {
         if (err) throw err;
         if (result) {
           console.log("Se han encontrado ", result.length, " resultados");
           console.log({ result });
 
-          var process = spawn('python', ["./estadistiques.py", JSON.stringify({ result })]);
-          let dades;
+          var process = spawn('py', ["./estadistiques.py", JSON.stringify({ result })]);
+          let imageData = Buffer.from([]);
 
           process.stdout.on('data', function (data) {
-            console.log("data:", data);
-            console.log(data.toString());
-            dades = data.toString();
-          })
-          process.on('close', (code) => {
-            res.send(dades);
-          })
+            // Concatenar los datos de salida para obtener la imagen completa
+            imageData = Buffer.concat([imageData, data]);
+          });
 
+          process.on('close', (code) => {
+            if (code === 0) {
+              // Enviar la imagen como respuesta
+              res.setHeader('Content-Type', 'image/png'); // Ajusta el tipo de contenido según el tipo de imagen
+              res.send(imageData);
+            } else {
+              res.status(500).send('Error en el proceso Python');
+            }
+          });
         } else {
           console.log("No se han encontrado resultados");
         }
