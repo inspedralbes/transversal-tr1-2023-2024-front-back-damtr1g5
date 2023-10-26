@@ -101,7 +101,7 @@ app.post("/insertarProducto", async (req, res) => {
 });
 
 // Ruta para eliminar un producto de la base de datos
-app.post("/eliminarProducto", async (req, res) => {
+app.delete("/eliminarProducto", async (req, res) => {
   const productoId = req.body.productoId;
 
   if (!productoId) {
@@ -119,12 +119,12 @@ app.post("/eliminarProducto", async (req, res) => {
 
 // Ruta para actualizar un producto en la base de datos
 app.post("/actualizarProducto", async (req, res) => {
-  const productoId = req.body.productoId;
-  const nuevaCategoria = req.body.nuevaCategoria;
-  const nuevoNombre = req.body.nuevoNombre;
-  const nuevaDescripcion = req.body.nuevaDescripcion;
-  const nuevoPrecio = req.body.nuevoPrecio;
-  const nuevaUrlImagen = req.body.nuevaUrlImagen;
+  const productoId = req.body.id;
+  const nuevaCategoria = req.body.categoria;
+  const nuevoNombre = req.body.nom;
+  const nuevaDescripcion = req.body.descripció;
+  const nuevoPrecio = req.body.preu;
+  const nuevaUrlImagen = req.body.url_imatge;
 
   if (!productoId) {
     return res.status(400).json({ error: "Falta el ID del producto" });
