@@ -1,7 +1,6 @@
 {
   "name": "transversal-tr1-2023-2024-front-back-damtr1g5",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "directories": {
     "doc": "docs"
@@ -16,5 +15,7 @@
     "express": "^4.18.2",
     "mysql2": "^3.6.2",
     "socket.io": "^4.7.2"
-  }
+  },
+  "devDependencies": {},
+  "description": ""
 }
