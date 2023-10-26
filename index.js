@@ -257,12 +257,12 @@ app.delete("/eliminarProducto", (req, res) => { //CON PROMISE
 });
 
 app.post("/actualizarProducto", (req, res) => {
-  const productoId = req.body.productoId;
-  const nuevaCategoria = req.body.nuevaCategoria;
-  const nuevoNombre = req.body.nuevoNombre;
-  const nuevaDescripcion = req.body.nuevaDescripcion;
-  const nuevoPrecio = req.body.nuevoPrecio;
-  const nuevaUrlImagen = req.body.nuevaUrlImagen;
+  const productoId = req.body.id;
+  const nuevaCategoria = req.body.categoria;
+  const nuevoNombre = req.body.nom;
+  const nuevaDescripcion = req.body.descripció;
+  const nuevoPrecio = req.body.preu;
+  const nuevaUrlImagen = req.body.url_imatge;
 
   if (!productoId) {
     return res.status(400).json({ error: "Falta el ID del producto" });
