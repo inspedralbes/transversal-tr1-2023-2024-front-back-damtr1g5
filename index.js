@@ -7,7 +7,7 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
 const io = new Server(server);
-const PORT = 3001;
+const PORT = 3002;
 var spawn = require("child_process").spawn;
 
 io.on("connection", (socket) => {
