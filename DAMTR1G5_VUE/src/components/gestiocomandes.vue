@@ -7,11 +7,44 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureStats">Mostrar Estadístiques</v-btn>
                 <v-btn @click="veurePreparacio">En Preparació</v-btn>
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+                <v-container class="grid-list-md">
+                    <v-row>
+                        <v-col v-for="comanda in comandesrecepcio.comandas" :key="comanda.id" cols="3">
+                            <v-card>
+                                <v-img :src="imatgeComandes" height="300"></v-img>
+                                Comanda: <v-text>{{ comanda.id }}</v-text><br>
+                                <v-btn @click="verInfo(comanda)">Más info</v-btn>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </v-container>
+                <v-dialog v-model="ver_info" max-width="600">
+                    <v-card>
+                        <v-card-title>Informació de la comanda: </v-card-title>
+                        <v-card-text>
+                            <h4>Entrega: </h4>
+                            <v-text>{{ selected_comanda.entrega || 'No especificada' }}</v-text>
+                            <h4>Productos:</h4>
+                            <ul>
+                                <li v-for="producte in selected_comanda.productos" :key="producte.id"
+                                    style="margin-left: 25px;">
+                                    {{ producte.nom }} - {{ producte.preu }}€
+                                </li>
+                            </ul>
+                            <h4>Preu Total</h4>
+                            <v-text>{{ calcularTotal(selected_comanda.productos) }}€</v-text>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn @click="ver_info = false">Tancar</v-btn>
+                            <v-btn @click="aceptarComanda" style="color: green;">Aceptar Comanda</v-btn>
+                            <v-btn style="color: red;">Eliminar Comanda</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
             </v-main>
         </v-layout>
     </div>
@@ -37,10 +70,44 @@
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
                 <v-btn @click="veureComandes">Gestió de comandes</v-btn>
-                <v-btn @click="veureStats">Mostrar Estadístiques</v-btn>
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+                <v-container class="grid-list-md">
+                    <v-row>
+                        <v-col v-for="comanda in comandespreparacio.comandas" :key="comanda.id" cols="3">
+                            <v-card>
+                                <v-img :src="imatgeComandes" height="300"></v-img>
+                                Comanda: <v-text>{{ comanda.id }}</v-text><br>
+                                <v-btn @click="verInfo(comanda)">Más info</v-btn>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </v-container>
+                <v-dialog v-model="ver_info" max-width="600">
+                    <v-card>
+                        <v-card-title>Informació de la comanda: </v-card-title>
+                        <v-card-text>
+                            <h1>En preparació</h1>
+                            <h4>Entrega: </h4>
+                            <v-text>{{ selected_comanda.entrega || 'No especificada' }}</v-text>
+                            <h4>Productos:</h4>
+                            <ul>
+                                <li v-for="producte in selected_comanda.productos" :key="producte.id"
+                                    style="margin-left: 25px;">
+                                    {{ producte.nom }} - {{ producte.preu }}€
+                                </li>
+                            </ul>
+                            <h4>Preu Total</h4>
+                            <v-text>{{ calcularTotal(selected_comanda.productos) }}€</v-text>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn @click="ver_info = false">Tancar</v-btn>
+                            <v-btn @click="aceptarComanda" style="color: green;">Aceptar Comanda</v-btn>
+                            <v-btn style="color: red;">Eliminar Comanda</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
             </v-main>
         </v-layout>
     </div>
@@ -58,26 +125,58 @@
             </v-main>
         </v-layout>
     </div>
-
 </template>
   
 <script>
+import { getComandes, editComandes } from '@/services/communicationsManager'
+import io from "socket.io-client";
 export default {
     data() {
         return {
+            imatgeComandes: 'http://localhost:3001/imatge_comanda.png',
             verComandes: true,
             verStats: false,
             verPreparacio: false,
-            verResum: false
-
+            verResum: false,
+            comandesrecepcio: [],
+            comandespreparacio: [],
+            comandesdescartades: [],
+            comandesresum: [],
+            selected_comanda: [],
+            ver_info: false,
         }
     },
+    created() {
+        // Conéctate al servidor Node.js que ejecuta Socket.io
+        const socket = io("http://localhost:3001"); // Asegúrate de que coincida con tu servidor Node.js
+
+        // Maneja el evento "nuevaComanda" para recibir actualizaciones en tiempo real
+        socket.on("nuevaComanda", (data) => {
+            console.log("Nueva comanda recibida:", data.comandas);
+
+            // Actualiza la lista de comandas en tiempo real
+            this.comandesrecepcio = data.comandas;
+        });
+
+        // Realiza una solicitud inicial para obtener las comandas
+        this.obtenerComandas();
+    },
+
     methods: {
+        obtenerComandas() {
+            getComandes().then(response => { this.comandesrecepcio = response; }) 
+            this.verComandes = true;
+        },
         irPanell() {
             this.$router.push("/")
         },
         irProductes() {
             this.$router.push("/gestioproductes")
+        },
+        verInfo(comandes) {
+            this.selected_comanda = comandes;
+            console.log('selected_comandes:', this.selected_comanda);
+            this.ver_info = true;
         },
         veureStats() {
             this.verComandes = false
@@ -91,17 +190,41 @@ export default {
             this.verResum = false
             this.verStats = false
         },
-        veurePreparacio(){
+        veurePreparacio() {
             this.verComandes = false
             this.verPreparacio = true
             this.verResum = false
             this.verStats = false
         },
-        veureResum(){
+        veureResum() {
             this.verComandes = false
             this.verPreparacio = false
             this.verResum = true
             this.verStats = false
+        },
+        calcularTotal() {
+            if (this.selected_comanda && this.selected_comanda.productos) {
+                let total = 0;
+
+                for (const producte of this.selected_comanda.productos) {
+                    total += parseFloat(producte.preu);
+                }
+
+                return total.toFixed(2);
+            } else {
+                return 'No se encontraron productos';
+            }
+        },
+        aceptarComanda() {
+            console.log("Función aceptarComanda ejecutada");
+            if (this.selected_comanda) {
+                this.comandespreparacio.push(this.selected_comanda);
+            }
+            this.ver_info = false;
+            console.log("comanda aceptada", this.comandespreparacio);
+        },
+        eliminarComanda() {
+
         }
 
     }

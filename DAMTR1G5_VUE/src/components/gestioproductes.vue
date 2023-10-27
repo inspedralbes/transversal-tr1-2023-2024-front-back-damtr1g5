@@ -74,7 +74,6 @@
 </template>
   
 <script>
-import axios from 'axios'
 import { getProductes, addProducte, deleteProducte, updateProducte } from '@/services/communicationsManager'
 export default {
     data() {

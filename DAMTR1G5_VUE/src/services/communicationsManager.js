@@ -47,3 +47,16 @@ export async function updateProducte(dadesEdicio){
             body: JSON.stringify(dadesEdicio)
         },);
 }
+
+export async function getComandes(){
+    console.log("Fetching comandes...")
+    const response = await fetch('http://localhost:3001/getComandes')
+    const comandes = await response.json()
+    console.log(comandes)
+    return comandes
+}
+
+export async function editComandes(){
+
+}
+
