@@ -1,6 +1,5 @@
 CREATE TABLE comanda (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    quantitat INT,
+    id INT AUTO_INCREMENT PRIMARY KEY, 
     id_usuari INT,
     entrega TIME,
     FOREIGN KEY (id_usuari) REFERENCES usuaris (id)
@@ -18,6 +17,7 @@ CREATE TABLE productes (
 CREATE TABLE comanda_productes (
     comanda_id INT,
     producte_id INT,   
+    quantitat INT,
     PRIMARY KEY (comanda_id, producte_id),
     FOREIGN KEY (comanda_id) REFERENCES comanda (id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (producte_id) REFERENCES productes (id) ON DELETE CASCADE ON UPDATE CASCADE
