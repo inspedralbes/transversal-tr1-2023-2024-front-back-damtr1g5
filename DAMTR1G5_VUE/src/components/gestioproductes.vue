@@ -5,6 +5,7 @@
         <v-app-bar title="Gestió de productes">
             <v-btn @click="irPanell">Panell de control</v-btn>
             <v-btn @click="irComandes">Comandes</v-btn>
+            <p>|</p>
             <v-btn @click="verFormulari">Insertar Producto</v-btn>
         </v-app-bar>
         <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
