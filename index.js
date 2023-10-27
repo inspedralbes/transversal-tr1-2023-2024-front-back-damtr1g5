@@ -237,13 +237,16 @@ app.get("/getComandes", async (req, res) => {
     // Para cada comanda, consulta los productos asociados
     for (const comanda of comandas) {
       comanda.productos = await executeQuery(
-        "SELECT p.* FROM productes p " +
+        "SELECT cp.quantitat, p.* FROM productes p " +
         "INNER JOIN comanda_productes cp ON p.id = cp.producte_id " +
         "WHERE cp.comanda_id = ?",
         [comanda.id]
       );
     }
-    io.emit("nuevaComanda", { comandas }); //Evento para enviar las comandas en tiempo real
+
+    // Emitir las comandas al cliente en tiempo real
+    io.emit("nuevaComanda", { comandas });
+
     console.log("Comandas enviadas al cliente con éxito");
     res.json({ comandas });
   } catch (error) {
@@ -252,17 +255,17 @@ app.get("/getComandes", async (req, res) => {
   }
 });
 
+
 // Ruta para crear comandas
 app.post("/crearComanda", async (req, res) => {
-  const { quantitat, id_usuari, entrega, productes } = req.body;
+  const { id_usuari, entrega, productes } = req.body;
 
-  if (!quantitat || !id_usuari || !entrega || !productes) {
+  if (!id_usuari || !entrega || !productes) {
     return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
     const nuevaComanda = {
-      quantitat,
       id_usuari,
       entrega,
     };
@@ -270,12 +273,15 @@ app.post("/crearComanda", async (req, res) => {
     const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
     const comandaId = result.insertId;
 
-    const comandaProductos = productes.map((producteId) => {
-      return [comandaId, producteId];
+    const comandaProductos = productes.map((producto) => {
+      return [comandaId, producto.producte_id, producto.quantitat];
     });
 
-    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id) VALUES ?", [comandaProductos]);
-    io.emit("nuevaComanda", nuevaComanda); //Evento para añadir una nueva comanda sin necesidad de recargar la página
+    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+
+    // Emitir la nueva comanda al cliente en tiempo real
+    io.emit("nuevaComanda", nuevaComanda);
+
     console.log("Comanda aceptada, nos ponemos en marcha");
     res.json({ message: "Comanda aceptada, nos ponemos en marcha" });
   } catch (error) {
