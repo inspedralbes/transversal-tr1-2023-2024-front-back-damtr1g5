@@ -9,6 +9,19 @@ const server = createServer(app);
 const io = new Server(server);
 const PORT = 3001;
 var spawn = require("child_process").spawn;
+
+io.on("connection", (socket) => {
+  console.log("Nuevo cliente conectado");
+
+  // Escucha eventos de Socket.io aquí
+  socket.on("nuevaComanda", (comanda) => {
+    // Emitir la nueva comanda a todos los clientes conectados
+    io.emit("nuevaComanda", comanda);
+  });
+
+  // Otros eventos de Socket.io pueden manejarse aquí
+});
+
 var conexion = null; //Se usa en el método de getEstadístiques
 
 app.listen(PORT, function () {
@@ -36,6 +49,7 @@ app.use(cors({
     return callback(null, true);
   }
 }));
+
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -229,6 +243,7 @@ app.get("/getComandes", async (req, res) => {
         [comanda.id]
       );
     }
+    io.emit("nuevaComanda", { comandas }); //Evento para enviar las comandas en tiempo real
     console.log("Comandas enviadas al cliente con éxito");
     res.json({ comandas });
   } catch (error) {
@@ -260,7 +275,7 @@ app.post("/crearComanda", async (req, res) => {
     });
 
     await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id) VALUES ?", [comandaProductos]);
-
+    io.emit("nuevaComanda", nuevaComanda); //Evento para añadir una nueva comanda sin necesidad de recargar la página
     console.log("Comanda aceptada, nos ponemos en marcha");
     res.json({ message: "Comanda aceptada, nos ponemos en marcha" });
   } catch (error) {
