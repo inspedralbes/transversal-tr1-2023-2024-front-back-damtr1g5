@@ -232,11 +232,11 @@ app.post("/postUsuaris", async (req, res) => {
 app.get("/getComandes", async (req, res) => {
   try {
     // Consulta la base de datos para obtener las comandas
-    const comandas = await executeQuery("SELECT * FROM comanda");
+    const comandes = await executeQuery("SELECT * FROM comanda");
 
     // Para cada comanda, consulta los productos asociados
-    for (const comanda of comandas) {
-      comanda.productos = await executeQuery(
+    for (const comanda of comandes) {
+      comanda.productes = await executeQuery(
         "SELECT cp.quantitat, p.* FROM productes p " +
         "INNER JOIN comanda_productes cp ON p.id = cp.producte_id " +
         "WHERE cp.comanda_id = ?",
@@ -245,15 +245,17 @@ app.get("/getComandes", async (req, res) => {
     }
 
     // Emitir las comandas al cliente en tiempo real
-    io.emit("nuevaComanda", { comandas });
+    io.emit("nuevaComanda", { comandes });
 
     console.log("Comandas enviadas al cliente con éxito");
-    res.json({ comandas });
+    res.json({ comandes });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Algo ha fallado al obtener las comandas" });
   }
 });
+
+
 
 
 // Ruta para crear comandas

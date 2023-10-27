@@ -2,6 +2,7 @@ CREATE TABLE comanda (
     id INT AUTO_INCREMENT PRIMARY KEY, 
     id_usuari INT,
     entrega TIME,
+    estat VARCHAR(255),
     FOREIGN KEY (id_usuari) REFERENCES usuaris (id)
 );
 
@@ -58,6 +59,8 @@ VALUES
 
 INSERT INTO usuaris VALUES (1,'Pepe','Garcia Fernandez','1234','ES879121');
 
-INSERT INTO comanda VALUES (1,4,1,NULL);
-
-INSERT INTO comanda_productes VALUES (1,1);
+INSERT INTO comanda VALUES (1,1,NULL,'pendent'),
+                           (2,1,NULL,'aprovada');
+INSERT INTO comanda_productes VALUES (1,2,3),
+									 (1,4,2),
+                                     (2,1,3);
