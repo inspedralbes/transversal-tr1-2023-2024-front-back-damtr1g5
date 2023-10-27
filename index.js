@@ -204,12 +204,37 @@ app.post("/postUsuaris", (req, res) => {
 
 app.get("/getComandes", (req, res) => {
 
-  res.json(respostes_JSON);
 
 });
 
-app.post("/postComandes", (req, res) => {
+// Ruta para crear comandas
+app.post("/crearComanda", async (req, res) => {
+  const { quantitat, id_usuari, entrega, productes } = req.body;
 
+  if (!quantitat || !id_usuari || !entrega || !productes) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
+  }
 
+  try {
+    const nuevaComanda = {
+      quantitat,
+      id_usuari,
+      entrega,
+    };
 
+    const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
+    const comandaId = result.insertId;
+
+    const comandaProductos = productes.map((producteId) => {
+      return [comandaId, producteId];
+    });
+
+    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id) VALUES ?", [comandaProductos]);
+
+    console.log("Comanda aceptada, nos ponemos en marcha");
+    res.json({ message: "Comanda aceptada, nos ponemos en marcha" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Algo ha fallado, el restaurante ha rechazado tu pedido" });
+  }
 });
