@@ -202,9 +202,27 @@ app.post("/postUsuaris", (req, res) => {
 
 });
 
-app.get("/getComandes", (req, res) => {
+// Ruta para obtener la lista de comandas
+app.get("/getComandes", async (req, res) => {
+  try {
+    // Consulta la base de datos para obtener las comandas
+    const comandas = await executeQuery("SELECT * FROM comanda");
 
-
+    // Para cada comanda, consulta los productos asociados
+    for (const comanda of comandas) {
+      comanda.productos = await executeQuery(
+        "SELECT p.* FROM productes p " +
+        "INNER JOIN comanda_productes cp ON p.id = cp.producte_id " +
+        "WHERE cp.comanda_id = ?",
+        [comanda.id]
+      );
+    }
+    console.log("Comandas enviadas al cliente con éxito");
+    res.json({ comandas });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Algo ha fallado al obtener las comandas" });
+  }
 });
 
 // Ruta para crear comandas
