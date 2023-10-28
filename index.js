@@ -1,5 +1,6 @@
 //Definim totes les constants que necessita el servidor per operar
 const express = require('express');
+var session = require('express-session');
 const cors = require("cors");
 const fs = require('fs');
 const app = express();
@@ -40,6 +41,16 @@ const dbConfig = {
   database: "a22jonorevel_DatosP1",
 };
 
+var sess = { //app.use és el intermediari, middleware
+  secret: 'paraula secreta',
+  resave: false, //Obsolet
+  saveUninitialized: true,
+  data: { 
+      comanda_oberta: false
+  }
+}
+
+app.use(session(sess));
 
 app.use(express.json());
 
