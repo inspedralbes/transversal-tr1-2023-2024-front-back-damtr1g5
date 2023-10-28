@@ -8,7 +8,7 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
 const io = new Server(server);
-const PORT = 3002;
+const PORT = 3001;
 var spawn = require("child_process").spawn;
 
 io.on("connection", (socket) => {
@@ -45,8 +45,8 @@ var sess = { //app.use és el intermediari, middleware
   secret: 'paraula secreta',
   resave: false, //Obsolet
   saveUninitialized: true,
-  data: { 
-      comanda_oberta: false
+  data: {
+    comanda_oberta: false
   }
 }
 
@@ -224,8 +224,8 @@ app.get("/getEstadistiques", (req, res) => {
 app.post("/postUsuaris", async (req, res) => {
   const { nom, cognoms, contrasenya, dades_targeta } = req.body;
 
-  if(!nom || !cognoms || !contrasenya || !dades_targeta){
-    return res.status(400).json({error: "Faltan datos obligatorios"});
+  if (!nom || !cognoms || !contrasenya || !dades_targeta) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
   try {
     const result = await executeQuery(
@@ -270,6 +270,7 @@ app.get("/getComandes", async (req, res) => {
 
 
 // Ruta para crear comandas
+// Ruta para crear comandas
 app.post("/crearComanda", async (req, res) => {
   const { id_usuari, entrega, productes } = req.body;
 
@@ -281,6 +282,7 @@ app.post("/crearComanda", async (req, res) => {
     const nuevaComanda = {
       id_usuari,
       entrega,
+      estat: "pendent", // S'estableix la comanda inicialment com pendent
     };
 
     const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
