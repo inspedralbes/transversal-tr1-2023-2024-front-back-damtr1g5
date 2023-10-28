@@ -70,22 +70,22 @@ app.use((req, res, next) => {
   next();
 })
 
-// Función que ejecuta una consulta SQL en la base de datos y maneja la conexión. SE HACE CON UNA PROMISE
+// Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
   return new Promise((resolve, reject) => {
     const connection = mysql.createConnection(dbConfig);
     connection.connect((error) => {
       if (error) {
         connection.end();
-        reject("Error de conexión a la base de datos");
+        reject("Error de connexió amb la base de dades");
       } else {
-        console.log("Conexión con éxito a la base de datos");
+        console.log("Connexió amb èxit a la base de dades");
         connection.query(query, params, (err, result) => {
           connection.end();
           if (err) {
-            reject("Error en la consulta a la base de datos");
+            reject("Error en la consulta a la base de dades");
           } else {
-            console.log("Desconexión con la base de datos exitosa");
+            console.log("Desconnexió amb èxit de la base de dades");
             resolve(result);
           }
         });
@@ -94,23 +94,23 @@ function executeQuery(query, params = []) {
   });
 }
 
-// Ruta para obtener la información de productos
+// Ruta per obtenir la informació dels productes
 app.get("/getProductes", async (req, res) => {
   try {
     const result = await executeQuery("SELECT * FROM productes");
-    console.log("productos obtenidos con éxito");
+    console.log("Productes obtinguts amb èxit");
     res.json({ result });
   } catch (error) {
     res.status(500).json({ error });
   }
 });
 
-// Ruta para insertar un producto en la base de datos
+// Ruta per inserir un producte a la base de dades
 app.post("/insertarProducto", async (req, res) => {
   const { categoria, nom, descripció, preu, url_imatge } = req.body;
 
   if (!categoria || !nom || !descripció || !preu || !url_imatge) {
-    return res.status(400).json({ error: "Faltan datos obligatorios" });
+    return res.status(400).json({ error: "Falten dades obligatòries" });
   }
 
   try {
@@ -118,31 +118,31 @@ app.post("/insertarProducto", async (req, res) => {
       "INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES (?, ?, ?, ?, ?)",
       [categoria, nom, descripció, preu, url_imatge]
     );
-    console.log("Inserción exitosa");
-    res.json({ message: "Inserción exitosa" });
+    console.log("Inserció exitosa");
+    res.json({ message: "Inserció exitosa" });
   } catch (error) {
     res.status(500).json({ error });
   }
 });
 
-// Ruta para eliminar un producto de la base de datos
+// Ruta per eliminar un producte de la base de dades
 app.delete("/eliminarProducto", async (req, res) => {
   const productoId = req.body.productoId;
 
   if (!productoId) {
-    return res.status(400).json({ error: "Falta el ID del producto" });
+    return res.status(400).json({ error: "Falta l'ID del producte" });
   }
 
   try {
     const result = await executeQuery("DELETE FROM productes WHERE id = ?", [productoId]);
-    console.log("Eliminación exitosa");
-    res.json({ message: "Eliminación exitosa" });
+    console.log("Eliminació exitosa");
+    res.json({ message: "Eliminació exitosa" });
   } catch (error) {
     res.status(500).json({ error });
   }
 });
 
-// Ruta para actualizar un producto en la base de datos
+// Ruta per actualitzar un producte de la base de dades
 app.post("/actualizarProducto", async (req, res) => {
   const productoId = req.body.id;
   const nuevaCategoria = req.body.categoria;
@@ -152,7 +152,7 @@ app.post("/actualizarProducto", async (req, res) => {
   const nuevaUrlImagen = req.body.url_imatge;
 
   if (!productoId) {
-    return res.status(400).json({ error: "Falta el ID del producto" });
+    return res.status(400).json({ error: "Falta l'ID del producte" });
   }
 
   try {
@@ -160,8 +160,8 @@ app.post("/actualizarProducto", async (req, res) => {
       "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
       [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
     );
-    console.log("Actualización exitosa");
-    res.json({ message: "Actualización exitosa" });
+    console.log("Actualització exitosa");
+    res.json({ message: "Actualització exitosa" });
   } catch (error) {
     res.status(500).json({ error });
   }
@@ -177,16 +177,16 @@ app.get("/getEstadistiques", (req, res) => {
     database: "a22jonorevel_DatosP1"
   });
 
-  //Llamo a la conexión
+  //Estableixo la conexió
   conexion.connect(function (error) {
-    //Creo la conexión
+    //Creo la conexió
     if (error) throw error;
     else {
-      console.log("Conexión realizada con éxito!");
+      console.log("Conexió realitzada amb èxit!");
       conexion.query("SELECT * FROM comanda_productes JOIN productes ON (comanda_productes.producte_id=productes.id) ", function (err, result) {
         if (err) throw err;
         if (result) {
-          console.log("Se han encontrado ", result.length, " resultados");
+          console.log("S'han trobat ", result.length, " resultats");
           console.log({ result });
 
           var process = spawn('py', ["./estadistiques.py", JSON.stringify({ result })]);
@@ -199,21 +199,21 @@ app.get("/getEstadistiques", (req, res) => {
 
           process.on('close', (code) => {
             if (code === 0) {
-              // Enviar la imagen como respuesta
+              // Enviar la imatge como resposta
               res.setHeader('Content-Type', 'image/png'); // Ajusta el tipo de contenido según el tipo de imagen
               res.send(imageData);
             } else {
-              res.status(500).send('Error en el proceso Python');
+              res.status(500).send('Error en el procés Python');
             }
           });
         } else {
-          console.log("No se han encontrado resultados");
+          console.log("No s'han trobat resultats");
         }
-        conexion.end(function (error) { //Cierro la conexión
+        conexion.end(function (error) { //Tanco la conexió
           if (error) {
             return console.log("Error" + error.message);
           }
-          console.log("Se cierra la conexión con la base de datos");
+          console.log("Es tanca la conexió amb la base de dades");
         });
       });
     }
@@ -225,27 +225,27 @@ app.post("/postUsuaris", async (req, res) => {
   const { nom, cognoms, contrasenya, dades_targeta } = req.body;
 
   if (!nom || !cognoms || !contrasenya || !dades_targeta) {
-    return res.status(400).json({ error: "Faltan datos obligatorios" });
+    return res.status(400).json({ error: "Falten dades obligatòries" });
   }
   try {
     const result = await executeQuery(
       "INSERT INTO usuaris (nom, cognoms, contrasenya, dades_targeta) VALUES (?, ?, ?, ?)",
       [nom, cognoms, contrasenya, dades_targeta]
     );
-    console.log("Usuario nuevo en la base de datos");
-    res.json({ message: "Usuario Registrado Correctamente" });
+    console.log("Usuari nou a la base de dades");
+    res.json({ message: "Usuari Registrat Correctament" });
   } catch (error) {
     res.status(500).json({ error });
   }
 });
 
-// Ruta para obtener la lista de comandas
+// Ruta per obtenir la llista de comandes
 app.get("/getComandes", async (req, res) => {
   try {
-    // Consulta la base de datos para obtener las comandas
+    // Consulta la base de dades per obtenir les comandes
     const comandes = await executeQuery("SELECT * FROM comanda");
 
-    // Para cada comanda, consulta los productos asociados
+    // Per a cada comanda, consulta els productes associats
     for (const comanda of comandes) {
       comanda.productes = await executeQuery(
         "SELECT cp.quantitat, p.* FROM productes p " +
@@ -255,14 +255,14 @@ app.get("/getComandes", async (req, res) => {
       );
     }
 
-    // Emitir las comandas al cliente en tiempo real
-    io.emit("nuevaComanda", { comandes });
+    // Emitre les comandes al client en temps real
+    io.emit("novaComanda", { comandes });
 
-    console.log("Comandas enviadas al cliente con éxito");
+    console.log("Comandes enviades al client amb èxit");
     res.json({ comandes });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Algo ha fallado al obtener las comandas" });
+    res.status(500).json({ message: "Alguna cosa ha fallat en obtenir les comandes" });
   }
 });
 
@@ -291,13 +291,41 @@ app.post("/crearComanda", async (req, res) => {
 
     await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
 
-    // Emitir la nueva comanda al cliente en tiempo real
-    io.emit("nuevaComanda", nuevaComanda);
+    // Emitre la nova comanda al client en temps real
+    io.emit("novaComanda", nuevaComanda);
 
-    console.log("Comanda aceptada, nos ponemos en marcha");
-    res.json({ message: "Comanda aceptada, nos ponemos en marcha" });
+    console.log("Comanda acceptada, ens posem en marxa");
+    res.json({ message: "Comanda acceptada, ens posem en marxa" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Algo ha fallado, el restaurante ha rechazado tu pedido" });
+    res.status(500).json({ message: "Alguna cosa ha fallat, el restaurant ha rebutjat la teva comanda" });
+  }
+});
+
+//Ruta per aprovat comandes un cop el restaurant les hagi visualitzat y les hagi acceptades
+app.put("/aprobarComanda", async (req, res) => {
+  const { comandaId, nuevoEstado } = req.body;
+
+  if (!comandaId || !nuevoEstado) {
+    return res.status(400).json({ error: "Falten dades obligatòries" });
+  }
+
+  try {
+    // Verifica si la comanda con el ID proporcionado existe en la base de datos
+    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [comandaId]);
+
+    if (!comandaExistente.length) {
+      return res.status(404).json({ error: "Comanda no trobada" });
+    }
+
+    // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
+    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [nuevoEstado, comandaId]);
+
+    io.emit("comandaActualitzada", { comandaId, nuevoEstado });
+
+    res.json({ message: "Comanda aprovada amb èxit" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 });
