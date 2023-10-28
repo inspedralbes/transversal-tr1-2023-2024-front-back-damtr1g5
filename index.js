@@ -267,9 +267,6 @@ app.get("/getComandes", async (req, res) => {
 });
 
 
-
-
-// Ruta para crear comandas
 // Ruta para crear comandas
 app.post("/crearComanda", async (req, res) => {
   const { id_usuari, entrega, productes } = req.body;
