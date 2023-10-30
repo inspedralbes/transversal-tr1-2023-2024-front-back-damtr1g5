@@ -98,7 +98,7 @@ function executeQuery(query, params = []) {
 app.post('/login', async (req, res) => {
 
   try {
-    const result = await executeQuery("SELECT nick,contrasenya FROM usuaris");
+    const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
     console.log("Usuaris obtinguts amb èxit");
   } catch (error) {
     res.status(500).json({ error });
@@ -110,6 +110,7 @@ app.post('/login', async (req, res) => {
   if (usuari) {
     // Almacena el ID de usuario en la sesión
     req.session.usuariID = usuari.id;
+    req.session.comanda_oberta = usuari.comanda_oberta;
     res.send('Inicio de sesión exitoso');
   } else {
     res.send('Credenciales incorrectas. Inténtalo de nuevo.');
@@ -187,6 +188,43 @@ app.post("/actualizarProducto", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error });
   }
+});
+
+// Ruta para crear comandas
+app.post("/updateComanda", async (req, res) => {
+
+  producte = req.body;
+
+  if (!req.session.comanda_oberta) {
+    try {
+      const nuevaComanda = {
+        id_usuari,
+        entrega,
+        estat: "oberta", // S'estableix la comanda inicialment com pendent
+      };
+  
+      const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
+      const comandaId = result.insertId;
+  
+      const comandaProductos = producte.map((producto) => {
+        return [comandaId, producto.producte_id, producto.quantitat];
+      });
+      const comandaProductos = [comandaId, producte.id, ]
+  
+      await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+  
+      // Emitre la nova comanda al client en temps real
+      io.emit("novaComanda", nuevaComanda);
+  
+      console.log("Comanda acceptada, ens posem en marxa");
+      res.json({ message: "Comanda acceptada, ens posem en marxa" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Alguna cosa ha fallat, el restaurant ha rebutjat la teva comanda" });
+    }
+  }
+
+  
 });
 
 //Agafar informació per estadístiques
@@ -306,7 +344,7 @@ app.post("/crearComanda", async (req, res) => {
 });
 
 //Ruta per aprovat comandes un cop el restaurant les hagi visualitzat y les hagi acceptades
-app.put("/aprobarComanda", async (req, res) => {
+app.put("/estatComanda", async (req, res) => {
   const { comandaId, nuevoEstado } = req.body;
 
   if (!comandaId || !nuevoEstado) {
