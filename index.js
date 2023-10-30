@@ -207,7 +207,7 @@ app.post("/updateComanda", async (req, res) => {
       const comandaId = result.insertId;
   
       const comandaProductos = producte.map((producto) => {
-        return [comandaId, producto.producte_id, producto.quantitat];
+        return [comandaId, producte.producte_id, producte.quantitat];
       });
       const comandaProductos = [comandaId, producte.id, ]
   
