@@ -303,7 +303,7 @@ app.post("/crearComanda", async (req, res) => {
 });
 
 //Ruta per aprovat comandes un cop el restaurant les hagi visualitzat y les hagi acceptades
-app.put("/aprobarComanda", async (req, res) => {
+app.put("/estatComanda", async (req, res) => {
   const { comandaId, nuevoEstado } = req.body;
 
   if (!comandaId || !nuevoEstado) {
