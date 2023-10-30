@@ -56,19 +56,11 @@ app.use(express.json());
 
 //Utilizem el mòdul "cors" per poder realitzar les operacions 
 app.use(cors({
-  origin: function (origin, callback) {
-    return callback(null, true);
-  }
+  origin: ['http://192.168.56.1:3000', 'http://localhost:3000'], //Es la dirección URL del VUE de PABLO
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
 }));
-
-
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-})
 
 // Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
