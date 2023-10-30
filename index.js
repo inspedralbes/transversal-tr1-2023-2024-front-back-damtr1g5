@@ -220,25 +220,6 @@ app.get("/getEstadistiques", (req, res) => {
   });
 });
 
-//POST per consultar els usuaris. És POST i no GET per la encriptació de la Password
-app.post("/postUsuaris", async (req, res) => {
-  const { nom, cognoms, contrasenya, dades_targeta } = req.body;
-
-  if (!nom || !cognoms || !contrasenya || !dades_targeta) {
-    return res.status(400).json({ error: "Falten dades obligatòries" });
-  }
-  try {
-    const result = await executeQuery(
-      "INSERT INTO usuaris (nom, cognoms, contrasenya, dades_targeta) VALUES (?, ?, ?, ?)",
-      [nom, cognoms, contrasenya, dades_targeta]
-    );
-    console.log("Usuari nou a la base de dades");
-    res.json({ message: "Usuari Registrat Correctament" });
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-});
-
 // Ruta per obtenir la llista de comandes
 app.get("/getComandes", async (req, res) => {
   try {
