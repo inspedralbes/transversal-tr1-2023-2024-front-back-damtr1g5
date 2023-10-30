@@ -127,7 +127,7 @@
   
 <script>
 import { getComandes, estatComanda } from '@/services/communicationsManager'
-import io from "socket.io-client";
+import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
@@ -142,26 +142,20 @@ export default {
         }
     },
     created() {
-        /* Conéctate al servidor Node.js que ejecuta Socket.io
-        const socket = io("http://localhost:3001"); // Asegúrate de que coincida con tu servidor Node.js
-
-        // Maneja el evento "nuevaComanda" para recibir actualizaciones en tiempo real
-        socket.on("nuevaComanda", (data) => {
-            console.log("Nueva comanda recibida:", data.comandas);
+        this.obtenerComandas();
+        socket.on("novaComanda", (comandas) => {
+            console.log("Nueva comanda recibida:", comandas);
 
             // Actualiza la lista de comandas en tiempo real
-            this.comandesrecepcio = data.comandas;
+            this.comandesrecepcio = comandas;
         });
-
-        // Realiza una solicitud inicial para obtener las comandas
-        this.obtenerComandas();*/
-        getComandes().then(response => { this.comandesrecepcio = response; })
-        this.verComandes = true;
     },
+
 
     methods: {
         obtenerComandas() {
-
+            getComandes().then(response => { this.comandesrecepcio = response; })
+            this.verComandes = true;
         },
         irPanell() {
             this.$router.push("/")

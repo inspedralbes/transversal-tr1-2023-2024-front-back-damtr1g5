@@ -45,7 +45,8 @@
                         <v-text-field v-model="nuevo_producte.nom" label="Nom"></v-text-field>
                         <v-text-field v-model="nuevo_producte.descripció" label="Descripció"></v-text-field>
                         <v-text-field v-model="nuevo_producte.preu" label="Preu"></v-text-field>
-                        <v-text-field v-model="nuevo_producte.url_imatge" label="URL de la imatge"></v-text-field>
+                        <!-- <v-text-field v-model="nuevo_producte.url_imatge" label="URL de la imatge"></v-text-field> -->
+                        <v-file-input v-model="nuevo_producte.imatge" label="Arxiu imatge"></v-file-input>
                     </v-card-text>
                     <v-card-actions>
                         <v-btn style="color: green;" @click="addProductes">Afegir Producte</v-btn>
@@ -91,7 +92,7 @@ export default {
                 "nom": null,
                 "descripció": null,
                 "preu": null,
-                "url_imatge": null,
+                "imatge": null,
             },
             producte_editado: {
                 "id": null,
@@ -99,7 +100,7 @@ export default {
                 "nom": null,
                 "descripció": null,
                 "preu": null,
-                "url_imatge": null,
+                "imatge": null,
             },
 
         }
@@ -133,7 +134,7 @@ export default {
         },
         verEditar(producte) {
             this.vereditarProducte = true;
-            
+
             this.producte_editado = {
                 id: producte.id,
                 categoria: producte.categoria,
@@ -144,7 +145,14 @@ export default {
             };
         },
         addProductes() {
-            addProducte(this.nuevo_producte)
+            const formData = new FormData();
+            formData.append('categoria', this.nuevo_producte.categoria);
+            formData.append('nom', this.nuevo_producte.nom);
+            formData.append('descripció', this.nuevo_producte.descripció);
+            formData.append('preu', this.nuevo_producte.preu);
+            formData.append('imatge', this.nuevo_producte.imatge);
+
+            addProducte(formData)
                 .then(() => {
                     return getProductes();
                 })
@@ -161,8 +169,9 @@ export default {
                 "nom": null,
                 "descripció": null,
                 "preu": null,
-                "url_imatge": null,
+                "imatge": null,
             };
+
             this.verAfegirProducte = false;
         },
 
@@ -192,7 +201,7 @@ export default {
                 .catch((error) => {
                     console.error('Error al editar producte:', error);
                 });
-            
+
             this.vereditarProducte = false;
             this.ver_info = false;
         },
