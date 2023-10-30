@@ -36,7 +36,7 @@ export async function deleteProducte(id) {
 
 }
 
-export async function updateProducte(dadesEdicio){
+export async function updateProducte(dadesEdicio) {
     console.log("datos recibidos: " + dadesEdicio)
 
     const response = await fetch(`http://localhost:3001/actualizarProducto`,
@@ -48,7 +48,7 @@ export async function updateProducte(dadesEdicio){
         },);
 }
 
-export async function getComandes(){
+export async function getComandes() {
     console.log("Fetching comandes...")
     const response = await fetch('http://localhost:3001/getComandes')
     const comandes = await response.json()
@@ -56,7 +56,21 @@ export async function getComandes(){
     return comandes
 }
 
-export async function editComandes(){
+export async function estatComanda(comandaId, nuevoEstado) {
+    try {
+        const response = await fetch('http://localhost:3001/estatComanda', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ comandaId, nuevoEstado }),
+        });
 
+        if (response.status === 200) {
+            console.log('Comanda aprobada con éxito.');
+        }
+    } catch (error) {
+        console.error('Error en la solicitud para editar la comanda:', error);
+    }
 }
 
