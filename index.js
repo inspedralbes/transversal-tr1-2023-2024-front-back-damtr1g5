@@ -116,11 +116,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-//Afegir producte a la comanda
-app.post('/afegirProducteComanda', async (req, res) => {
-
-})
-
 // Ruta per obtenir la informació dels productes
 app.get("/getProductes", async (req, res) => {
   try {
