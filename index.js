@@ -94,6 +94,28 @@ function executeQuery(query, params = []) {
   });
 }
 
+//Login
+app.post('/login', async (req, res) => {
+
+  try {
+    const result = await executeQuery("SELECT nick,contrasenya FROM usuaris");
+    console.log("Usuaris obtinguts amb èxit");
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+
+  const { nomUsuari, contrasenya } = req.body;
+  const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
+
+  if (usuari) {
+    // Almacena el ID de usuario en la sesión
+    req.session.usuariID = usuari.id;
+    res.send('Inicio de sesión exitoso');
+  } else {
+    res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+  }
+});
+
 // Ruta per obtenir la informació dels productes
 app.get("/getProductes", async (req, res) => {
   try {
