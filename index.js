@@ -1,6 +1,7 @@
 //Definim totes les constants que necessita el servidor per operar
 const express = require('express');
 var session = require('express-session');
+const multer = require('multer')
 const cors = require("cors");
 const fs = require('fs');
 const app = express();
@@ -10,6 +11,17 @@ const server = createServer(app);
 const io = new Server(server);
 const PORT = 3001;
 var spawn = require("child_process").spawn;
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 io.on("connection", (socket) => {
   console.log("Nuevo cliente conectado");
@@ -98,14 +110,17 @@ app.get("/getProductes", async (req, res) => {
 });
 
 // Ruta per inserir un producte a la base de dades
-app.post("/insertarProducto", async (req, res) => {
+app.post("/insertarProducto", upload.single('imatge'), async (req, res, next) => {
+  console.log(req.body)
+  const imatge = req.file
   const { categoria, nom, descripció, preu, url_imatge } = req.body;
 
   if (!categoria || !nom || !descripció || !preu || !url_imatge) {
-    return res.status(400).json({ error: "Falten dades obligatòries" });
+    return res.status(400).json({ error: "Faltan datos obligatorios o imagen" });
   }
 
   try {
+
     const result = await executeQuery(
       "INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES (?, ?, ?, ?, ?)",
       [categoria, nom, descripció, preu, url_imatge]
