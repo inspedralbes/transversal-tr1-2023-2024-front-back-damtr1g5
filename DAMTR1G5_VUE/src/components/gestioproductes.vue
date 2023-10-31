@@ -46,7 +46,7 @@
                         <v-text-field v-model="nuevo_producte.descripció" label="Descripció"></v-text-field>
                         <v-text-field v-model="nuevo_producte.preu" label="Preu"></v-text-field>
                         <!-- <v-text-field v-model="nuevo_producte.url_imatge" label="URL de la imatge"></v-text-field> -->
-                        <v-file-input v-model="nuevo_producte.imatge" label="Arxiu imatge"></v-file-input>
+                        <v-file-input v-model="nuevo_producte.imatge" label="Arxiu imatge" accept="image/*" type="file" ></v-file-input>
                     </v-card-text>
                     <v-card-actions>
                         <v-btn style="color: green;" @click="addProductes">Afegir Producte</v-btn>
@@ -145,12 +145,15 @@ export default {
             };
         },
         addProductes() {
+            this.imatge = this.nuevo_producte.imatge[0]
+            
             const formData = new FormData();
             formData.append('categoria', this.nuevo_producte.categoria);
             formData.append('nom', this.nuevo_producte.nom);
             formData.append('descripció', this.nuevo_producte.descripció);
             formData.append('preu', this.nuevo_producte.preu);
-            formData.append('imatge', this.nuevo_producte.imatge);
+            formData.append('imatge', this.imatge);
+            formData.append('url_imatge', this.imatge.name);
 
             addProducte(formData)
                 .then(() => {

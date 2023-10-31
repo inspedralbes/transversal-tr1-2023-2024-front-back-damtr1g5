@@ -11,10 +11,8 @@ export async function addProducte(dadesProducte) {
 
     const response = await fetch(`http://localhost:3001/insertarProducto`,
         {
-            method: 'POST', headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dadesProducte)
+            method: 'POST',
+            body: dadesProducte
         },);
 }
 
