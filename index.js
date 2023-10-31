@@ -395,24 +395,27 @@ app.put("/estatComanda", async (req, res) => {
 //Pagar
 app.post("/pagar", async (req, res) => {
 
-  const { comandaId, nuevoEstado } = req.body;
+  //const { comandaId, nuevoEstado } = req.body;
+  comanda = req.body;
+  id = comanda.id;
+  estat = 'pendent';
 
-  if (!comandaId || !nuevoEstado) {
+  if (!comanda || !estat) {
     return res.status(400).json({ error: "Falten dades obligatòries" });
   }
 
   try {
     // Verifica si la comanda con el ID proporcionado existe en la base de datos
-    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [comandaId]);
+    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [comanda]);
 
     if (!comandaExistente.length) {
       return res.status(404).json({ error: "Comanda no trobada" });
     }
 
     // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
-    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [nuevoEstado, comandaId]);
+    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, comanda]);
 
-    io.emit("comandaActualitzada", { comandaId, nuevoEstado });
+    io.emit("comandaActualitzada", { comanda, estat });
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
