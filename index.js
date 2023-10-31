@@ -83,7 +83,8 @@ function executeQuery(query, params = []) {
         connection.query(query, params, (err, result) => {
           connection.end();
           if (err) {
-            reject("Error en la consulta a la base de dades");
+            //reject("Error en la consulta a la base de dades");
+            reject(err);
           } else {
             console.log("Desconnexió amb èxit de la base de dades");
             resolve(result);
@@ -109,8 +110,9 @@ app.post('/login', async (req, res) => {
 
   if (usuari) {
     // Almacena el ID de usuario en la sesión
-    req.session.usuariID = usuari.id;
-    req.session.comanda_oberta = usuari.comanda_oberta;
+    req.session.nick = "Pepe99";
+    req.session.usuariID = 1;
+    req.session.comanda_oberta = false;
     res.send('Inicio de sesión exitoso');
   } else {
     res.send('Credenciales incorrectas. Inténtalo de nuevo.');
@@ -194,24 +196,43 @@ app.post("/actualizarProducto", async (req, res) => {
 app.post("/updateComanda", async (req, res) => {
 
   producte = req.body;
+  console.log(producte);
+  console.log(producte.id);
 
   if (!req.session.comanda_oberta) {
     try {
       const nuevaComanda = {
-        id_usuari,
-        entrega,
-        estat: "oberta", // S'estableix la comanda inicialment com pendent
+        id_usuari: req.session.usuariID,
+        entrega: null,
+        estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
   
       const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
       const comandaId = result.insertId;
   
-      const comandaProductos = producte.map((producto) => {
-        return [comandaId, producte.producte_id, producte.quantitat];
-      });
-      const comandaProductos = [comandaId, producte.id, ]
+      const comandaProductos = [comandaId, producte.id, producte.quantitat]
   
-      await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+      await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES (?)", [comandaProductos]);
+  
+      // Emitre la nova comanda al client en temps real
+      //io.emit("novaComanda", nuevaComanda);
+  
+      console.log("Comanda acceptada, ens posem en marxa");
+      res.json({ message: "Comanda acceptada, ens posem en marxa" });
+      req.session.comanda_oberta = true;
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Alguna cosa ha fallat, el restaurant ha rebutjat la teva comanda" });
+    }
+  }
+
+  else {
+    try {
+    const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda", nuevaComanda);
+
+    const comandaProductos = [result.id_comanda_actual, req.session.usuariID, producte.id]
+    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
   
       // Emitre la nova comanda al client en temps real
       io.emit("novaComanda", nuevaComanda);
