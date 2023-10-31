@@ -193,7 +193,42 @@ app.post("/actualizarProducto", async (req, res) => {
 });
 
 // Ruta para crear comandas
-app.post("/updateComanda", async (req, res) => {
+app.post("/crearComanda", async (req, res) => {
+  const { id_usuari, entrega, productes } = req.body;
+
+  if (!id_usuari || !entrega || !productes) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
+  }
+
+  try {
+    const nuevaComanda = {
+      id_usuari,
+      entrega,
+      estat: "pendent", // S'estableix la comanda inicialment com pendent
+    };
+
+    const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
+    const comandaId = result.insertId;
+
+    const comandaProductos = productes.map((producto) => {
+      return [comandaId, producto.producte_id, producto.quantitat];
+    });
+
+    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+
+    // Emitre la nova comanda al client en temps real
+    io.emit("novaComanda", nuevaComanda);
+
+    console.log("Comanda acceptada, ens posem en marxa");
+    res.json({ message: "Comanda acceptada, ens posem en marxa" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Alguna cosa ha fallat, el restaurant ha rebutjat la teva comanda" });
+  }
+});
+
+// Ruta para crear comandas
+app.post("/afegirProducteComanda", async (req, res) => {
 
   producte = req.body;
   console.log(producte);
@@ -325,42 +360,6 @@ app.get("/getComandes", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Alguna cosa ha fallat en obtenir les comandes" });
-  }
-});
-
-
-// Ruta para crear comandas
-app.post("/crearComanda", async (req, res) => {
-  const { id_usuari, entrega, productes } = req.body;
-
-  if (!id_usuari || !entrega || !productes) {
-    return res.status(400).json({ error: "Faltan datos obligatorios" });
-  }
-
-  try {
-    const nuevaComanda = {
-      id_usuari,
-      entrega,
-      estat: "pendent", // S'estableix la comanda inicialment com pendent
-    };
-
-    const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
-    const comandaId = result.insertId;
-
-    const comandaProductos = productes.map((producto) => {
-      return [comandaId, producto.producte_id, producto.quantitat];
-    });
-
-    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
-
-    // Emitre la nova comanda al client en temps real
-    io.emit("novaComanda", nuevaComanda);
-
-    console.log("Comanda acceptada, ens posem en marxa");
-    res.json({ message: "Comanda acceptada, ens posem en marxa" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Alguna cosa ha fallat, el restaurant ha rebutjat la teva comanda" });
   }
 });
 
