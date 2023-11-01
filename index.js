@@ -110,23 +110,21 @@ app.get("/getProductes", async (req, res) => {
 });
 
 // Ruta per inserir un producte a la base de dades
-app.post("/insertarProducto", upload.single('imatge'), async (req, res, next) => {
+app.post("/insertarProducto", upload.single('imatge'),async (req, res) => {
+  const { categoria, nom, descripcio, preu, url_imatge } = req.body;
   console.log(req.body)
-  const imatge = req.file
-  const { categoria, nom, descripció, preu, url_imatge } = req.body;
 
-  if (!categoria || !nom || !descripció || !preu || !url_imatge) {
-    return res.status(400).json({ error: "Faltan datos obligatorios o imagen" });
+  if (!categoria || !nom || !descripcio || !preu || !url_imatge) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
-
     const result = await executeQuery(
       "INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES (?, ?, ?, ?, ?)",
-      [categoria, nom, descripció, preu, url_imatge]
+      [categoria, nom, descripcio, preu, url_imatge]
     );
-    console.log("Inserció exitosa");
-    res.json({ message: "Inserció exitosa" });
+    console.log("Inserción exitosa");
+    res.json({ message: "Inserción exitosa" });
   } catch (error) {
     res.status(500).json({ error });
   }
@@ -150,11 +148,11 @@ app.delete("/eliminarProducto", async (req, res) => {
 });
 
 // Ruta per actualitzar un producte de la base de dades
-app.post("/actualizarProducto", async (req, res) => {
+app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) => {
   const productoId = req.body.id;
   const nuevaCategoria = req.body.categoria;
   const nuevoNombre = req.body.nom;
-  const nuevaDescripcion = req.body.descripció;
+  const nuevaDescripcion = req.body.descripcio;
   const nuevoPrecio = req.body.preu;
   const nuevaUrlImagen = req.body.url_imatge;
 
