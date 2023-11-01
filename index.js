@@ -32,7 +32,6 @@ io.on("connection", (socket) => {
     io.emit("nuevaComanda", comanda);
   });
 
-  // Otros eventos de Socket.io pueden manejarse aquí
 });
 
 var conexion = null; //Se usa en el método de getEstadístiques
