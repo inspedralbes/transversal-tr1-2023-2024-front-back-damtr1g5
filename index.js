@@ -122,7 +122,7 @@ app.post('/login', async (req, res) => {
 // Ruta per obtenir la informació dels productes
 app.get("/getProductes", async (req, res) => {
   try {
-    const result = await executeQuery("SELECT * FROM productes");
+    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
     res.json({ result });
   } catch (error) {
