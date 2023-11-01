@@ -14,6 +14,10 @@ export async function addProducte(dadesProducte) {
             method: 'POST',
             body: dadesProducte
         },);
+    const data = await response.json();
+    console.log("respuesta del servidor: " + data);
+
+    return data;
 }
 
 export async function deleteProducte(id) {
@@ -39,11 +43,13 @@ export async function updateProducte(dadesEdicio) {
 
     const response = await fetch(`http://localhost:3001/actualizarProducto`,
         {
-            method: 'POST', headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dadesEdicio)
+            method: 'POST',
+            body: dadesEdicio,
         },);
+    const data = await response.json();
+    console.log("respuesta del servidor: " + data);
+
+    return data;
 }
 
 export async function getComandes() {

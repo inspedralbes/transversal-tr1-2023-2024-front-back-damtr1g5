@@ -46,7 +46,8 @@
                         <v-text-field v-model="nuevo_producte.descripció" label="Descripció"></v-text-field>
                         <v-text-field v-model="nuevo_producte.preu" label="Preu"></v-text-field>
                         <!-- <v-text-field v-model="nuevo_producte.url_imatge" label="URL de la imatge"></v-text-field> -->
-                        <v-file-input v-model="nuevo_producte.imatge" label="Arxiu imatge" accept="image/*" type="file" ></v-file-input>
+                        <v-file-input v-model="nuevo_producte.url_imatge" label="Arxiu imatge" accept="image/*"
+                            type="file"></v-file-input>
                     </v-card-text>
                     <v-card-actions>
                         <v-btn style="color: green;" @click="addProductes">Afegir Producte</v-btn>
@@ -62,7 +63,8 @@
                         <v-text-field v-model="producte_editado.nom" label="Nom"></v-text-field>
                         <v-text-field v-model="producte_editado.descripció" label="Descripció"></v-text-field>
                         <v-text-field v-model="producte_editado.preu" label="Preu"></v-text-field>
-                        <v-text-field v-model="producte_editado.url_imatge" label="URL de la imatge"></v-text-field>
+                        <v-file-input v-model="producte_editado.url_imatge" label="Arxiu imatge" accept="image/*"
+                            type="file"></v-file-input>
                     </v-card-text>
                     <v-card-actions>
                         <v-btn style="color: green;" @click="actualizarProducte(producte_editado)">Editar Producte</v-btn>
@@ -92,7 +94,7 @@ export default {
                 "nom": null,
                 "descripció": null,
                 "preu": null,
-                "imatge": null,
+                "url_imatge": null,
             },
             producte_editado: {
                 "id": null,
@@ -100,8 +102,9 @@ export default {
                 "nom": null,
                 "descripció": null,
                 "preu": null,
-                "imatge": null,
+                "url_imatge": null,
             },
+            imatgeedicio: null,
 
         }
     },
@@ -133,6 +136,7 @@ export default {
             this.verAfegirProducte = true;
         },
         verEditar(producte) {
+
             this.vereditarProducte = true;
 
             this.producte_editado = {
@@ -141,16 +145,16 @@ export default {
                 nom: producte.nom,
                 descripció: producte.descripció,
                 preu: producte.preu,
-                url_imatge: producte.url_imatge,
             };
+            this.imatgeedicio = producte.url_imatge;
         },
         addProductes() {
-            this.imatge = this.nuevo_producte.imatge[0]
-            
+            this.imatge = this.nuevo_producte.url_imatge[0]
+
             const formData = new FormData();
             formData.append('categoria', this.nuevo_producte.categoria);
             formData.append('nom', this.nuevo_producte.nom);
-            formData.append('descripció', this.nuevo_producte.descripció);
+            formData.append('descripcio', this.nuevo_producte.descripció);
             formData.append('preu', this.nuevo_producte.preu);
             formData.append('imatge', this.imatge);
             formData.append('url_imatge', this.imatge.name);
@@ -172,7 +176,7 @@ export default {
                 "nom": null,
                 "descripció": null,
                 "preu": null,
-                "imatge": null,
+                "url_imatge": null,
             };
 
             this.verAfegirProducte = false;
@@ -194,7 +198,25 @@ export default {
 
         },
         actualizarProducte() {
-            updateProducte(this.producte_editado)
+            const formDataEdit = new FormData();
+            formDataEdit.append('id', this.producte_editado.id);
+            formDataEdit.append('categoria', this.producte_editado.categoria);
+            formDataEdit.append('nom', this.producte_editado.nom);
+            formDataEdit.append('descripcio', this.producte_editado.descripció);
+            formDataEdit.append('preu', this.producte_editado.preu);
+
+            // Verifica si se ha seleccionado un nuevo archivo de imagen
+            if (this.producte_editado.url_imatge && this.producte_editado.url_imatge[0]) {
+                // Se ha seleccionado un nuevo archivo, utiliza ese archivo
+                this.imatge = this.producte_editado.url_imatge[0];
+                formDataEdit.append('imatgeEdit', this.imatge);
+                formDataEdit.append('url_imatge', this.imatge.name);
+            } else {
+                // No se ha seleccionado un nuevo archivo, utiliza la imagen existente
+                formDataEdit.append('url_imatge', this.imatgeedicio);
+            }
+
+            updateProducte(formDataEdit)
                 .then(() => {
                     return getProductes();
                 })
@@ -206,6 +228,7 @@ export default {
                 });
 
             this.vereditarProducte = false;
+
             this.ver_info = false;
         },
 
