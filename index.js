@@ -227,7 +227,7 @@ app.post("/crearComanda", async (req, res) => {
   }
 });
 
-// Ruta para crear comandas
+// Ruta para añadir productos a las comandas
 app.post("/afegirProducteComanda", async (req, res) => {
 
   producte = req.body;
@@ -278,6 +278,40 @@ app.post("/afegirProducteComanda", async (req, res) => {
       console.error(error);
       res.status(500).json({ message: "Alguna cosa ha fallat, el restaurant ha rebutjat la teva comanda" });
     }
+  }
+
+  
+});
+
+// Ruta para editar productos en las comandas
+app.post("/editarComanda", async (req, res) => {
+
+  //const { comandaId, nuevoEstado } = req.body;
+  comanda = req.body;
+  id = comanda.id;
+  estat = 'pendent';
+
+  if (!comanda || !estat) {
+    return res.status(400).json({ error: "Falten dades obligatòries" });
+  }
+
+  try {
+    // Verifica si la comanda con el ID proporcionado existe en la base de datos
+    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [comanda]);
+
+    if (!comandaExistente.length) {
+      return res.status(404).json({ error: "Comanda no trobada" });
+    }
+
+    // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
+    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, comanda]);
+
+    io.emit("comandaActualitzada", { comanda, estat });
+
+    res.json({ message: "Comanda aprovada amb èxit" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 
   
