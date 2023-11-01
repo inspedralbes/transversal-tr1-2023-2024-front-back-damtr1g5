@@ -101,22 +101,24 @@ app.post('/login', async (req, res) => {
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
     console.log("Usuaris obtinguts amb èxit");
+
+    const { nomUsuari, contrasenya } = req.body;
+    const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
+
+    if (usuari) {
+      // Almacena el ID de usuario en la sesión
+      req.session.nick = "Pepe99";
+      req.session.usuariID = 1;
+      req.session.comanda_oberta = false;
+      res.send('Inicio de sesión exitoso');
+    } else {
+      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+    }
   } catch (error) {
     res.status(500).json({ error });
   }
 
-  const { nomUsuari, contrasenya } = req.body;
-  const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
 
-  if (usuari) {
-    // Almacena el ID de usuario en la sesión
-    req.session.nick = "Pepe99";
-    req.session.usuariID = 1;
-    req.session.comanda_oberta = false;
-    res.send('Inicio de sesión exitoso');
-  } else {
-    res.send('Credenciales incorrectas. Inténtalo de nuevo.');
-  }
 });
 
 // Ruta per obtenir la informació dels productes
@@ -241,17 +243,17 @@ app.post("/afegirProducteComanda", async (req, res) => {
         entrega: null,
         estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
-  
+
       const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
       const comandaId = result.insertId;
-  
+
       const comandaProductos = [comandaId, producte.id, producte.quantitat]
-  
+
       await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES (?)", [comandaProductos]);
-  
+
       // Emitre la nova comanda al client en temps real
       //io.emit("novaComanda", nuevaComanda);
-  
+
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
       req.session.comanda_oberta = true;
@@ -264,14 +266,14 @@ app.post("/afegirProducteComanda", async (req, res) => {
 
   else {
     try {
-    const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda", nuevaComanda);
+      const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda", nuevaComanda);
 
-    const comandaProductos = [result.id_comanda_actual, req.session.usuariID, producte.id]
-    await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
-  
+      const comandaProductos = [result.id_comanda_actual, req.session.usuariID, producte.id]
+      await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+
       // Emitre la nova comanda al client en temps real
       io.emit("novaComanda", nuevaComanda);
-  
+
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
     } catch (error) {
@@ -280,7 +282,7 @@ app.post("/afegirProducteComanda", async (req, res) => {
     }
   }
 
-  
+
 });
 
 // Ruta para editar productos en las comandas
@@ -314,7 +316,7 @@ app.post("/editarComanda", async (req, res) => {
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 
-  
+
 });
 
 //Agafar informació per estadístiques
