@@ -315,3 +315,26 @@ app.put("/estatComanda", async (req, res) => {
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 });
+
+//Login
+app.post('/login', async (req, res) => {
+  try {
+    const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
+    console.log("Usuaris obtinguts amb èxit");
+
+    const { nomUsuari, contrasenya } = req.body;
+    const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
+
+    if (usuari) {
+      // Almacena el ID de usuario en la sesión
+      req.session.nick = usuari.nick; // Almacena el nick del usuario
+      req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      res.send('Inicio de sesión exitoso');
+    } else {
+      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+    }
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
