@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
 var conexion = null; //Se usa en el método de getEstadístiques
 
 app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG");
+  console.log("SERVER RUNNNIG AT PORT " + PORT);
 });
 
 app.use(express.static("imatges_productes"))
