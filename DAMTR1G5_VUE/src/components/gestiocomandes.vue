@@ -3,7 +3,7 @@
 
     <div class="panell_recepcio" v-if="verComandes">
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="Gestió de comandes">
+            <v-app-bar title="Recepció de comandes">
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
@@ -13,8 +13,8 @@
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-container class="grid-list-md">
                     <v-row>
-                        <v-col v-for="comanda in comandesrecepcio.comandes" :key="comanda.id" cols="3">
-                            <v-card v-if="comanda.estat === 'pendent'">
+                        <v-col v-for="comanda in comandaspendent" :key="comanda.id" cols="3">
+                            <v-card>
                                 <v-img :src="imatgeComandes" height="300"></v-img>
                                 Comanda: <v-text>{{ comanda.id }}</v-text><br>
                                 <v-btn @click="verInfo(comanda)">Más info</v-btn>
@@ -60,6 +60,11 @@
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+                <ul v-if="estadisticas">
+                    <li v-for="(valor, clave) in estadisticas" :key="clave">
+                        {{ clave }}: {{ valor }}
+                    </li>
+                </ul>
             </v-main>
         </v-layout>
     </div>
@@ -163,23 +168,28 @@
 </template>
   
 <script>
-import { getComandes, estatComanda } from '@/services/communicationsManager'
+import { getComandes, estatComanda, getEstadistiques } from '@/services/communicationsManager'
 import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
             imatgeComandes: 'http://localhost:3001/imatge_comanda.png',
-            verComandes: true,
+            verComandes: false,
             verStats: false,
             verPreparacio: false,
             verResum: false,
             comandesrecepcio: [],
+            comandesPreparacio: null,
             selected_comanda: [],
+            comandaspendent: [],
             ver_info: false,
+            estadisticas: null,
+
         }
     },
     created() {
-        this.obtenerComandas();
+        this.veureComandes();
+
         socket.on("novaComanda", (comandas) => {
             console.log("Nueva comanda recibida:", comandas);
 
@@ -189,12 +199,27 @@ export default {
         });
     },
 
-
     methods: {
         obtenerComandas() {
             getComandes().then(response => { this.comandesrecepcio = response; })
             this.verComandes = true;
+        },
+        async veureComandes() {
+            // Realiza la obtención de comandas en este método
+            try {
+                const response = await getComandes();
+                this.comandesrecepcio = response;
 
+                // Filtra las comandas una vez que se han cargado
+                this.comandaspendent = this.comandesrecepcio.comandes.filter(comanda => comanda.estat === 'pendent' || comanda.estat === 'oberta');
+
+                this.verComandes = true;
+                this.verPreparacio = false;
+                this.verResum = false;
+                this.verStats = false;
+            } catch (error) {
+                console.log('Error al obtener comandas: ', error);
+            }
         },
         irPanell() {
             this.$router.push("/")
@@ -207,17 +232,18 @@ export default {
             console.log('selected_comandes:', this.selected_comanda);
             this.ver_info = true;
         },
-        veureStats() {
+        async veureStats() {
             this.verComandes = false
             this.verPreparacio = false
             this.verResum = false
             this.verStats = true
-        },
-        veureComandes() {
-            this.verComandes = true
-            this.verPreparacio = false
-            this.verResum = false
-            this.verStats = false
+
+            try {
+                this.estadisticas = await getEstadistiques()
+
+            } catch (error) {
+                console.log('Error al obtener estadistiques: ', error)
+            }
 
         },
         veurePreparacio() {

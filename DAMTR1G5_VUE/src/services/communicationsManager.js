@@ -78,3 +78,11 @@ export async function estatComanda(comandaId, nuevoEstado) {
     }
 }
 
+export async function getEstadistiques(){
+    console.log("Fetching estadistiques...")
+    const response = await fetch('http://localhost:3001/getEstadistiques')
+    const stats = await response.json()
+    console.log(stats)
+    return stats
+}
+
