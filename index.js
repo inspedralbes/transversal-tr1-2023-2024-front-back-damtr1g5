@@ -29,7 +29,7 @@ app.listen(PORT, function () {
   console.log("SERVER RUNNNIG");
 });
 
-app.use(express.static("imatges_productes"))
+app.use(express.static("imatges_productes, imatges_stats"))
 
 var mysql = require('mysql2');
 
@@ -341,7 +341,7 @@ app.get("/getEstadistiques", (req, res) => {
           console.log("S'han trobat ", result.length, " resultats");
           console.log({ result });
 
-          var process = spawn('py', ["./estadistiques.py", JSON.stringify({ result })]);
+          var process = spawn('py', ["./estadistiques.py"], { input: JSON.stringify(result) });
           let imageData = Buffer.from([]);
 
           process.stdout.on('data', function (data) {

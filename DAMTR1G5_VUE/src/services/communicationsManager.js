@@ -78,11 +78,21 @@ export async function estatComanda(comandaId, nuevoEstado) {
     }
 }
 
-export async function getEstadistiques(){
+export async function getEstadistiques() {
     console.log("Fetching estadistiques...")
     const response = await fetch('http://localhost:3001/getEstadistiques')
-    const stats = await response.json()
-    console.log(stats)
-    return stats
+
+    if (response.status === 200) {
+        // Si la respuesta es exitosa, muestra la imagen
+        const blob = await response.blob();
+        const objectURL = URL.createObjectURL(blob);
+
+        // Ahora puedes usar objectURL para mostrar la imagen en tu aplicación
+        return objectURL;
+    } else {
+        console.error('Error al obtener estadísticas:', response.status);
+        return null;
+    }
 }
+
 

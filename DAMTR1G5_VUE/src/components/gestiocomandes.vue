@@ -55,16 +55,15 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureComandes">Gestió de comandes</v-btn>
+                <v-btn @click="veureComandes">Recepció de comandes</v-btn>
                 <v-btn @click="veurePreparacio">En Preparació</v-btn>
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
-            <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
-                <ul v-if="estadisticas">
-                    <li v-for="(valor, clave) in estadisticas" :key="clave">
-                        {{ clave }}: {{ valor }}
-                    </li>
-                </ul>
+            <v-main class="d-flex align-center justify-center" style="min-height: 300px">
+
+                <div v-for="imagen in estadisticas" :key="imagen">
+                    <img :src="`http://localhost:3001/${imagen}`"  />
+                </div>
             </v-main>
         </v-layout>
     </div>
@@ -74,7 +73,7 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureComandes">Gestió de comandes</v-btn>
+                <v-btn @click="veureComandes">Recepció de comandes</v-btn>
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
@@ -122,7 +121,7 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureComandes">Gestió de comandes</v-btn>
+                <v-btn @click="veureComandes">Recepció de comandes</v-btn>
                 <v-btn @click="veureStats">Mostrar Estadístiques</v-btn>
                 <v-btn @click="veurePreparacio">En Preparació</v-btn>
             </v-app-bar>
@@ -183,12 +182,13 @@ export default {
             selected_comanda: [],
             comandaspendent: [],
             ver_info: false,
-            estadisticas: null,
+            imagenEstadisticas: null, 
 
         }
     },
     created() {
         this.veureComandes();
+        
 
         socket.on("novaComanda", (comandas) => {
             console.log("Nueva comanda recibida:", comandas);
@@ -200,10 +200,7 @@ export default {
     },
 
     methods: {
-        obtenerComandas() {
-            getComandes().then(response => { this.comandesrecepcio = response; })
-            this.verComandes = true;
-        },
+
         async veureComandes() {
             // Realiza la obtención de comandas en este método
             try {
@@ -238,11 +235,9 @@ export default {
             this.verResum = false
             this.verStats = true
 
-            try {
-                this.estadisticas = await getEstadistiques()
-
-            } catch (error) {
-                console.log('Error al obtener estadistiques: ', error)
+            const imagenURL = await getEstadistiques();
+            if (imagenURL) {
+                this.imagenEstadisticas = imagenURL;
             }
 
         },
