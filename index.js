@@ -31,6 +31,8 @@ io.on("connection", (socket) => {
     // Emitir la nueva comanda a todos los clientes conectados
     io.emit("nuevaComanda", comanda);
   });
+
+  // Otros eventos de Socket.io pueden manejarse aquí
 });
 
 var conexion = null; //Se usa en el método de getEstadístiques
@@ -314,7 +316,7 @@ app.put("/estatComanda", async (req, res) => {
   }
 });
 
-//Login
+//Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
