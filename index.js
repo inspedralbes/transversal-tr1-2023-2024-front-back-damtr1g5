@@ -7,26 +7,31 @@ const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
-const io = new Server(server);
+
 const PORT = 3001;
 var spawn = require("child_process").spawn;
 
-io.on("connection", (socket) => {
-  console.log("Nuevo cliente conectado");
-
-  // Escucha eventos de Socket.io aquí
-  socket.on("nuevaComanda", (comanda) => {
-    // Emitir la nueva comanda a todos los clientes conectados
-    io.emit("nuevaComanda", comanda);
-  });
-
-  // Otros eventos de Socket.io pueden manejarse aquí
-});
-
 var conexion = null; //Se usa en el método de getEstadístiques
 
-app.listen(PORT, function () {
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  }
+});
+
+io.on('connection', (socket) => {
+  socket.on('canviEstat', (msg) => {
+    io.emit('canviEstat', msg);
+  });
+});
+
+/*app.listen(PORT, function () {
   console.log("SERVER RUNNNIG");
+});*/
+
+server.listen(PORT, () => {
+  console.log('Server running at http://localhost:' + PORT);
 });
 
 app.use(express.static("imatges_productes"))
@@ -55,11 +60,13 @@ app.use(session(sess));
 app.use(express.json());
 
 //Utilizem el mòdul "cors" per poder realitzar les operacions 
-app.use(cors({
+/*app.use(cors({
   origin: function (origin, callback) {
     return callback(null, true);
   }
-}));
+}));*/
+
+app.use(cors());
 
 
 app.use((req, res, next) => {
@@ -111,6 +118,19 @@ app.post('/login', async (req, res) => {
       req.session.usuariID = 1;
       req.session.comanda_oberta = false;
       res.send('Inicio de sesión exitoso');
+
+      /*io.on("connection", (socket) => {
+        console.log("Nuevo cliente conectado");
+      
+        // Escucha eventos de Socket.io aquí
+        socket.on("nuevaComanda", (comanda) => {
+          // Emitir la nueva comanda a todos los clientes conectados
+          io.emit("nuevaComanda", comanda);
+        });
+      
+        // Otros eventos de Socket.io pueden manejarse aquí
+      });*/
+
     } else {
       res.send('Credenciales incorrectas. Inténtalo de nuevo.');
     }
