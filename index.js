@@ -22,6 +22,8 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
   socket.on('canviEstat', (msg) => {
+    console.log("rebut");
+    console.log(msg);
     io.emit('canviEstat', msg);
   });
 });
