@@ -315,7 +315,7 @@ app.put("/estatComanda", async (req, res) => {
   }
 });
 
-//Login
+//Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
@@ -329,9 +329,13 @@ app.post('/login', async (req, res) => {
       req.session.nick = usuari.nick; // Almacena el nick del usuario
       req.session.usuariID = usuari.id; // Almacena el ID del usuario
       req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
-      res.send('Inicio de sesión exitoso');
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      console.log(nomUsuari);
+      console.log(contrasenya);
     } else {
-      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.log(nomUsuari);
+      console.log(contrasenya);
+      res.status(401).json({"error": "Credenciales incorrectas. Inténtalo de nuevo."});
     }
   } catch (error) {
     res.status(500).json({ error });
