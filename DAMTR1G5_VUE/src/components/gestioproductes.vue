@@ -3,6 +3,7 @@
 
     <v-layout class="rounded rounded-md" v-if="mostrar_productes">
         <v-app-bar title="Gestió de productes">
+
             <v-btn @click="irPanell">Panell de control</v-btn>
             <v-btn @click="irComandes">Comandes</v-btn>
             <p>|</p>
@@ -10,8 +11,10 @@
         </v-app-bar>
         <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
             <v-container class="grid-list-md">
+                <v-text-field v-model="searchQuery" label="Cercar..." outlined dense clearable
+                    prepend-inner-icon="mdi-magnify"></v-text-field>
                 <v-row>
-                    <v-col v-for="producte in productes.result" :key="producte.id" cols="3">
+                    <v-col v-for="producte in filteredProducts" :key="producte.id" cols="3">
                         <v-card>
                             <v-img :src="getImageSource(producte)" height="300"></v-img>
                             <v-text>{{ producte.nom }}</v-text><br>
@@ -105,6 +108,7 @@ export default {
                 "url_imatge": null,
             },
             imatgeedicio: null,
+            searchQuery: "",
 
         }
     },
@@ -231,8 +235,18 @@ export default {
 
             this.ver_info = false;
         },
-
-
+    },
+    computed: {
+        filteredProducts() {
+            const query = this.searchQuery.toLowerCase().trim();
+            if (query === "") {
+                return this.productes.result;
+            } else {
+                return this.productes.result.filter((producte) => {
+                    return producte.nom.toLowerCase().startsWith(query);
+                });
+            }
+        },
     }
 }
-</script>
+</script>   
