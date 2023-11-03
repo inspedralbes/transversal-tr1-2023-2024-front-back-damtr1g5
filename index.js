@@ -8,7 +8,7 @@ const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
-const io = new Server(server);
+
 const PORT = 3001;
 var spawn = require("child_process").spawn;
 
@@ -23,25 +23,32 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-io.on("connection", (socket) => {
-  console.log("Nuevo cliente conectado");
-
-  // Escucha eventos de Socket.io aquí
-  socket.on("nuevaComanda", (comanda) => {
-    // Emitir la nueva comanda a todos los clientes conectados
-    io.emit("nuevaComanda", comanda);
-  });
-
-  // Otros eventos de Socket.io pueden manejarse aquí
-});
-
 var conexion = null; //Se usa en el método de getEstadístiques
 
-app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG AT PORT " + PORT);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  }
 });
 
-app.use(express.static("imatges_productes, imatges_stats"))
+io.on('connection', (socket) => {
+  socket.on('canviEstat', (msg) => {
+    console.log("rebut");
+    console.log(msg);
+    io.emit('canviEstat', msg);
+  });
+});
+
+/*app.listen(PORT, function () {
+  console.log("SERVER RUNNNIG AT PORT " + PORT);
+});*/
+
+server.listen(PORT, () => {
+  console.log('Server running at http://localhost:' + PORT);
+});
+
+app.use(express.static("imatges_productes"))
 
 var mysql = require('mysql2');
 
@@ -67,12 +74,22 @@ app.use(session(sess));
 app.use(express.json());
 
 //Utilizem el mòdul "cors" per poder realitzar les operacions 
-app.use(cors({
-  origin: ['http://192.168.56.1:3000', 'http://localhost:3000'], //Es la dirección URL del VUE de PABLO
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204,
-}));
+/*app.use(cors({
+  origin: function (origin, callback) {
+    return callback(null, true);
+  }
+}));*/
+
+app.use(cors());
+
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+})
 
 // Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
@@ -115,6 +132,19 @@ app.post('/login', async (req, res) => {
       req.session.usuariID = 1;
       req.session.comanda_oberta = false;
       res.send('Inicio de sesión exitoso');
+
+      /*io.on("connection", (socket) => {
+        console.log("Nuevo cliente conectado");
+      
+        // Escucha eventos de Socket.io aquí
+        socket.on("nuevaComanda", (comanda) => {
+          // Emitir la nueva comanda a todos los clientes conectados
+          io.emit("nuevaComanda", comanda);
+        });
+      
+        // Otros eventos de Socket.io pueden manejarse aquí
+      });*/
+
     } else {
       res.send('Credenciales incorrectas. Inténtalo de nuevo.');
     }
