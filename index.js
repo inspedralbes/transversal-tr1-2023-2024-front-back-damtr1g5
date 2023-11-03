@@ -1,7 +1,6 @@
 //Definim totes les constants que necessita el servidor per operar
 const express = require('express');
 var session = require('express-session');
-const multer = require('multer')
 const cors = require("cors");
 const fs = require('fs');
 const app = express();
@@ -22,7 +21,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
@@ -49,7 +47,9 @@ server.listen(PORT, () => {
   console.log('Server running at http://localhost:' + PORT);
 });
 
-app.use(express.static("imatges_productes"))
+app.use('/imatges_productes', express.static('imatges_productes'));
+
+app.use('/imatges_stats', express.static('imatges_stats'))
 
 var mysql = require('mysql2');
 
@@ -137,13 +137,13 @@ app.post('/login', async (req, res) => {
       req.session.nick = usuari.nick; // Almacena el nick del usuario
       req.session.usuariID = usuari.id; // Almacena el ID del usuario
       req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
-      res.json({"mensaje": "Inicio de sesión exitoso"});
+      res.json({ "mensaje": "Inicio de sesión exitoso" });
       console.log(nomUsuari);
       console.log(contrasenya);
     } else {
       console.log(nomUsuari);
       console.log(contrasenya);
-      res.status(401).json({"error": "Credenciales incorrectas. Inténtalo de nuevo."});
+      res.status(401).json({ "error": "Credenciales incorrectas. Inténtalo de nuevo." });
     }
   } catch (error) {
     res.status(500).json({ error });
@@ -162,7 +162,7 @@ app.get("/getProductes", async (req, res) => {
 });
 
 // Ruta per inserir un producte a la base de dades
-app.post("/insertarProducto", upload.single('imatge'),async (req, res) => {
+app.post("/insertarProducto", upload.single('imatge'), async (req, res) => {
   const { categoria, nom, descripcio, preu, url_imatge } = req.body;
   console.log(req.body)
 
@@ -375,39 +375,36 @@ app.get("/getEstadistiques", (req, res) => {
     if (error) throw error;
     else {
       console.log("Conexió realitzada amb èxit!");
-      conexion.query("SELECT * FROM comanda_productes JOIN productes ON (comanda_productes.producte_id=productes.id) ", function (err, result) {
-        if (err) throw err;
-        if (result) {
-          console.log("S'han trobat ", result.length, " resultats");
-          console.log({ result });
+      conexion.query(
+        "SELECT cp.comanda_id, cp.producte_id, p.categoria, c.datacomanda, " +
+        "HOUR(c.datacomanda) AS hora_comanda " +
+        "FROM comanda_productes cp " +
+        "INNER JOIN productes p ON cp.producte_id = p.id " +
+        "INNER JOIN comanda c ON cp.comanda_id = c.id",
+        function (err, result) {
+          if (err) throw err;
+          if (result) {
+            console.log("S'han trobat ", result.length, " resultats");
+            console.log({ result });
 
-          // Aquí puedes pasar los datos JSON como parámetros de consulta en la URL
-          // Ejemplo: /getEstadistiques?data=<json_data>
-          var jsonData = JSON.stringify(result);
-          var process = spawn('py', ["./estadistiques.py", jsonData]);
+            var jsonData = JSON.stringify(result);
+            var process = spawn('py', ["./estadistiques.py", jsonData]);
 
-          process.on('close', (code) => {
-            if (code === 0) {
-              // Después de generar la imagen, sirve la imagen generada
-              const imagePath = './imatges_stats/comandes_per_producte.png'; // Ruta de la imagen generada
-              res.sendFile(imagePath);
-            } else {
-              console.error('Error al generar la imagen.');
-              res.status(500).send('Error al generar la imagen');
-            }
-          });
-        } else {
-          console.log("No s'han trobat resultats");
-          res.status(404).send('No se encontraron resultados');
-        }
-        conexion.end(function (error) {
-          // Tanco la conexión
-          if (error) {
-            return console.log("Error" + error.message);
+            process.stdout.on('data', (data) => {
+
+              res.set('Content-Type', 'image/png');
+              res.send(data); // Envia los datos de la imagen como respuesta
+            });
+          } else {
+            console.log("No s'han trobat resultats");
           }
-          console.log("Es tanca la conexió amb la base de dades");
+          conexion.end(function (error) { // Tanco la conexión
+            if (error) {
+              return console.log("Error" + error.message);
+            }
+            console.log("Es tanca la conexió amb la base de dades");
+          });
         });
-      });
     }
   });
 });

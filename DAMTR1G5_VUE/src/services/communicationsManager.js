@@ -80,20 +80,24 @@ export async function estatComanda(comandaId, nuevoEstado) {
 
 export async function getEstadistiques() {
     try {
-      const response = await fetch('localhost:3001/getEstadistiques'); 
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        return imageUrl;
-      } else {
-        throw new Error(`Error al obtener estadísticas: ${response.status} - ${response.statusText}`);
-      }
+        const response = await fetch('http://localhost:3001/getEstadistiques', {
+            method: 'GET'
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            console.log(imageUrl);
+            return imageUrl;
+        } else {
+            throw new Error(`Error al obtener estadísticas: ${response.status} - ${response.statusText}`);
+        }
     } catch (error) {
-      console.error('Error en getEstadistiques:', error);
-      throw error;
+        console.error('Error en getEstadistiques:', error);
+        throw error;
     }
-  }
-  
+}
+
+
 
 
