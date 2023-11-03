@@ -1,10 +1,10 @@
-import pandas as pd  # pip install pandas
+import os
+import pandas as pd
 import matplotlib.pyplot as plt
-
-# pip3 install pandas
 import sys
 import json
 import io
+from datetime import datetime
 
 
 """
@@ -16,6 +16,9 @@ comanda_productes = [
     }
   ]
 """
+
+if not os.path.exists("imatges_stats"):
+    os.makedirs("imatges_stats")
 
 comanda_productes = (sys.argv[1])
 
@@ -29,14 +32,15 @@ x_values = df['categoria'].unique()
 y_values = df['categoria'].value_counts().tolist()
 plt.bar(x_values, y_values)
 plt.show()
-plt.close('all')
+
+hora_actual = datetime.now().strftime("%Y%m%d%H%M%S")
+
+nom_imatge = f"imatge_{hora_actual}.png"
 
 # Convertir la imagen a bytes
-buffer = io.BytesIO()
-plt.savefig(buffer, format='png')
-buffer.seek(0)
+plt.savefig(os.path.join("imatges_stats", nom_imatge))
 
-sys.stdout.buffer.write(buffer.read())
+print(f"La imagen se ha guardado como 'imatges_stats/{nom_imatge}'")
 
 
 #print(pd.DataFrame.to_json(df))
