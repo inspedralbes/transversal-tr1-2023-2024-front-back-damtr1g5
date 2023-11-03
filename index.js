@@ -116,9 +116,8 @@ function executeQuery(query, params = []) {
   });
 }
 
-//Login
+//Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
-
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
     console.log("Usuaris obtinguts amb èxit");
@@ -128,31 +127,20 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      req.session.nick = "Pepe99";
-      req.session.usuariID = 1;
-      req.session.comanda_oberta = false;
-      res.send('Inicio de sesión exitoso');
-
-      /*io.on("connection", (socket) => {
-        console.log("Nuevo cliente conectado");
-      
-        // Escucha eventos de Socket.io aquí
-        socket.on("nuevaComanda", (comanda) => {
-          // Emitir la nueva comanda a todos los clientes conectados
-          io.emit("nuevaComanda", comanda);
-        });
-      
-        // Otros eventos de Socket.io pueden manejarse aquí
-      });*/
-
+      req.session.nick = usuari.nick; // Almacena el nick del usuario
+      req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      console.log(nomUsuari);
+      console.log(contrasenya);
     } else {
-      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.log(nomUsuari);
+      console.log(contrasenya);
+      res.status(401).json({"error": "Credenciales incorrectas. Inténtalo de nuevo."});
     }
   } catch (error) {
     res.status(500).json({ error });
   }
-
-
 });
 
 // Ruta per obtenir la informació dels productes
@@ -462,32 +450,6 @@ app.put("/estatComanda", async (req, res) => {
   }
 });
 
-//Login per comprovar que un usuari existeix a la base de dades
-app.post('/login', async (req, res) => {
-  try {
-    const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
-    console.log("Usuaris obtinguts amb èxit");
-
-    const { nomUsuari, contrasenya } = req.body;
-    const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
-
-    if (usuari) {
-      // Almacena el ID de usuario en la sesión
-      req.session.nick = usuari.nick; // Almacena el nick del usuario
-      req.session.usuariID = usuari.id; // Almacena el ID del usuario
-      req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
-      res.json({"mensaje": "Inicio de sesión exitoso"});
-      console.log(nomUsuari);
-      console.log(contrasenya);
-    } else {
-      console.log(nomUsuari);
-      console.log(contrasenya);
-      res.status(401).json({"error": "Credenciales incorrectas. Inténtalo de nuevo."});
-    }
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-});
 
 
 //Pagar
