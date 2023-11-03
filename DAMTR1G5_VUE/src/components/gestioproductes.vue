@@ -117,7 +117,7 @@ export default {
     methods: {
         getImageSource(producte) {
             if (producte.url_imatge && !producte.url_imatge.startsWith('http')) {
-                return `http://localhost:3001/${producte.url_imatge}`;
+                return `http://localhost:3001/imatges_productes/${producte.url_imatge}`;
             }
             return producte.url_imatge;
         },
