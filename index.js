@@ -36,7 +36,7 @@ server.listen(PORT, () => {
   console.log('Server running at http://localhost:' + PORT);
 });
 
-app.use(express.static("imatges_productes, imatges_stats"))
+app.use(express.static("imatges_productes"))
 
 var mysql = require('mysql2');
 
