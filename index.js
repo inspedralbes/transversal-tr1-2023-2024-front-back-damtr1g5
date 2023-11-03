@@ -1,6 +1,7 @@
 //Definim totes les constants que necessita el servidor per operar
 const express = require('express');
 var session = require('express-session');
+const multer = require('multer')
 const cors = require("cors");
 const fs = require('fs');
 const multer = require('multer')
@@ -8,7 +9,7 @@ const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
-const io = new Server(server);
+
 const PORT = 3001;
 var spawn = require("child_process").spawn;
 
@@ -23,23 +24,54 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-io.on("connection", (socket) => {
-  console.log("Nuevo cliente conectado");
-
-  // Escucha eventos de Socket.io aquí
-  socket.on("nuevaComanda", (comanda) => {
-    // Emitir la nueva comanda a todos los clientes conectados
-    io.emit("nuevaComanda", comanda);
-  });
-
-  // Otros eventos de Socket.io pueden manejarse aquí
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
+
+const upload = multer({ storage: storage });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
-app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG");
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  }
 });
+
+io.on('connection', (socket) => {
+  socket.on('canviEstat', (msg) => {
+    console.log("rebut");
+    console.log(msg);
+    io.emit('canviEstat', msg);
+  });
+});
+
+/*app.listen(PORT, function () {
+  console.log("SERVER RUNNNIG AT PORT " + PORT);
+});*/
+
+server.listen(PORT, () => {
+  console.log('Server running at http://localhost:' + PORT);
+});
+
+app.use(express.static("imatges_productes"))
 
 var mysql = require('mysql2');
 
@@ -71,11 +103,13 @@ app.use(session(sess));
 app.use(express.json());
 
 //Utilizem el mòdul "cors" per poder realitzar les operacions 
-app.use(cors({
+/*app.use(cors({
   origin: function (origin, callback) {
     return callback(null, true);
   }
-}));
+}));*/
+
+app.use(cors());
 
 
 app.use((req, res, next) => {
@@ -111,9 +145,8 @@ function executeQuery(query, params = []) {
   });
 }
 
-//Login
+//Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
-
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
     console.log("Usuaris obtinguts amb èxit");
@@ -123,18 +156,20 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      req.session.nick = "Pepe99";
-      req.session.usuariID = 1;
-      req.session.comanda_oberta = false;
-      res.send('Inicio de sesión exitoso');
+      req.session.nick = usuari.nick; // Almacena el nick del usuario
+      req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      console.log(nomUsuari);
+      console.log(contrasenya);
     } else {
-      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.log(nomUsuari);
+      console.log(contrasenya);
+      res.status(401).json({"error": "Credenciales incorrectas. Inténtalo de nuevo."});
     }
   } catch (error) {
     res.status(500).json({ error });
   }
-
-
 });
 
 // Ruta per obtenir la informació dels productes
@@ -149,7 +184,7 @@ app.get("/getProductes", async (req, res) => {
 });
 
 // Ruta per inserir un producte a la base de dades
-app.post("/insertarProducto", upload.single('imatge'), async (req, res) => {
+app.post("/insertarProducto", upload.single('imatge'),async (req, res) => {
   const { categoria, nom, descripcio, preu, url_imatge } = req.body;
   console.log(req.body)
 
@@ -455,6 +490,8 @@ app.put("/estatComanda", async (req, res) => {
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 });
+
+
 
 //Pagar
 app.post("/pagar", async (req, res) => {

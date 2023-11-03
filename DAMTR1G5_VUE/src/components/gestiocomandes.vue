@@ -306,6 +306,8 @@ export default {
                     .then(() => getComandes())
                     .then((response) => {
                         this.comandesrecepcio = response;
+                        socket.emit('canviEstat',nuevoEstado+comandaId);
+                        console.log("enviat");
                     })
                     .catch((error) => {
                         console.error("Error al aprobar la comanda:", error);
