@@ -1,6 +1,7 @@
 //Definim totes les constants que necessita el servidor per operar
 const express = require('express');
 var session = require('express-session');
+const multer = require('multer')
 const cors = require("cors");
 const fs = require('fs');
 const app = express();
@@ -10,6 +11,17 @@ const server = createServer(app);
 const io = new Server(server);
 const PORT = 3001;
 var spawn = require("child_process").spawn;
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 io.on("connection", (socket) => {
   console.log("Nuevo cliente conectado");
@@ -26,7 +38,7 @@ io.on("connection", (socket) => {
 var conexion = null; //Se usa en el método de getEstadístiques
 
 app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG");
+  console.log("SERVER RUNNNIG AT PORT " + PORT);
 });
 
 app.use(express.static("imatges_productes"))
@@ -56,19 +68,11 @@ app.use(express.json());
 
 //Utilizem el mòdul "cors" per poder realitzar les operacions 
 app.use(cors({
-  origin: function (origin, callback) {
-    return callback(null, true);
-  }
+  origin: ['http://192.168.56.1:3000', 'http://localhost:3000'], //Es la dirección URL del VUE de PABLO
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
 }));
-
-
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-})
 
 // Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
@@ -133,20 +137,21 @@ app.get("/getProductes", async (req, res) => {
 });
 
 // Ruta per inserir un producte a la base de dades
-app.post("/insertarProducto", async (req, res) => {
-  const { categoria, nom, descripció, preu, url_imatge } = req.body;
+app.post("/insertarProducto", upload.single('imatge'),async (req, res) => {
+  const { categoria, nom, descripcio, preu, url_imatge } = req.body;
+  console.log(req.body)
 
-  if (!categoria || !nom || !descripció || !preu || !url_imatge) {
-    return res.status(400).json({ error: "Falten dades obligatòries" });
+  if (!categoria || !nom || !descripcio || !preu || !url_imatge) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
     const result = await executeQuery(
       "INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES (?, ?, ?, ?, ?)",
-      [categoria, nom, descripció, preu, url_imatge]
+      [categoria, nom, descripcio, preu, url_imatge]
     );
-    console.log("Inserció exitosa");
-    res.json({ message: "Inserció exitosa" });
+    console.log("Inserción exitosa");
+    res.json({ message: "Inserción exitosa" });
   } catch (error) {
     res.status(500).json({ error });
   }
@@ -170,11 +175,11 @@ app.delete("/eliminarProducto", async (req, res) => {
 });
 
 // Ruta per actualitzar un producte de la base de dades
-app.post("/actualizarProducto", async (req, res) => {
+app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) => {
   const productoId = req.body.id;
   const nuevaCategoria = req.body.categoria;
   const nuevoNombre = req.body.nom;
-  const nuevaDescripcion = req.body.descripció;
+  const nuevaDescripcion = req.body.descripcio;
   const nuevoPrecio = req.body.preu;
   const nuevaUrlImagen = req.body.url_imatge;
 
@@ -426,6 +431,34 @@ app.put("/estatComanda", async (req, res) => {
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 });
+
+//Login per comprovar que un usuari existeix a la base de dades
+app.post('/login', async (req, res) => {
+  try {
+    const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
+    console.log("Usuaris obtinguts amb èxit");
+
+    const { nomUsuari, contrasenya } = req.body;
+    const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
+
+    if (usuari) {
+      // Almacena el ID de usuario en la sesión
+      req.session.nick = usuari.nick; // Almacena el nick del usuario
+      req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      console.log(nomUsuari);
+      console.log(contrasenya);
+    } else {
+      console.log(nomUsuari);
+      console.log(contrasenya);
+      res.status(401).json({"error": "Credenciales incorrectas. Inténtalo de nuevo."});
+    }
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
 
 //Pagar
 app.post("/pagar", async (req, res) => {
