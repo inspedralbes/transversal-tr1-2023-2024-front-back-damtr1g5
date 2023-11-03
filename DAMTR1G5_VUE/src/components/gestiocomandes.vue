@@ -60,9 +60,8 @@
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px">
-
-                <div v-for="imagen in estadisticas" :key="imagen">
-                    <img :src="`http://localhost:3001/${imagen}`"  />
+                <div v-if="imageUrl">
+                    <img :src="imageUrl" alt="Estadísticas" />
                 </div>
             </v-main>
         </v-layout>
@@ -172,7 +171,7 @@ import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
-            imatgeComandes: 'http://localhost:3001/imatge_comanda.png',
+            imatgeComandes: 'http://localhost:3001/imatges_productes/imatge_comanda.png',
             verComandes: false,
             verStats: false,
             verPreparacio: false,
@@ -182,13 +181,13 @@ export default {
             selected_comanda: [],
             comandaspendent: [],
             ver_info: false,
-            imagenEstadisticas: null, 
+            imageUrl: null,
 
         }
     },
     created() {
         this.veureComandes();
-        
+
 
         socket.on("novaComanda", (comandas) => {
             console.log("Nueva comanda recibida:", comandas);
@@ -235,9 +234,11 @@ export default {
             this.verResum = false
             this.verStats = true
 
-            const imagenURL = await getEstadistiques();
-            if (imagenURL) {
-                this.imagenEstadisticas = imagenURL;
+            try {
+                const imageUrl = await getEstadistiques();
+                this.imageUrl = imageUrl;
+            } catch (error) {
+                console.error('Error al obtener estadísticas:', error);
             }
 
         },

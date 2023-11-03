@@ -4,6 +4,7 @@ var session = require('express-session');
 const multer = require('multer')
 const cors = require("cors");
 const fs = require('fs');
+const multer = require('multer')
 const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
@@ -11,6 +12,28 @@ const server = createServer(app);
 
 const PORT = 3001;
 var spawn = require("child_process").spawn;
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -51,6 +74,12 @@ server.listen(PORT, () => {
 app.use(express.static("imatges_productes"))
 
 var mysql = require('mysql2');
+
+
+
+app.use('/imatges_productes', express.static('imatges_productes'));
+
+app.use('/imatges_stats', express.static('imatges_stats'));
 
 //Datos para la conexión en la base de datos, se usa 1 vez para cada ruta
 const dbConfig = {
@@ -184,6 +213,17 @@ app.delete("/eliminarProducto", async (req, res) => {
   }
 
   try {
+    const [product] = await executeQuery("SELECT url_imatge FROM productes WHERE id = ?", [productoId])
+
+    const imagePath = `./imatges_productes/${product.url_imatge}`
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.error("Error al eliminar el archivo de imagen", err);
+      } else {
+        console.log("Imagen eliminada con éxito");
+      }
+    });
+
     const result = await executeQuery("DELETE FROM productes WHERE id = ?", [productoId]);
     console.log("Eliminació exitosa");
     res.json({ message: "Eliminació exitosa" });
@@ -344,7 +384,6 @@ app.post("/editarComanda", async (req, res) => {
 
 //Agafar informació per estadístiques
 app.get("/getEstadistiques", (req, res) => {
-
   conexion = mysql.createConnection({
     host: "dam.inspedralbes.cat",
     user: "a22jonorevel_usuario",
@@ -352,9 +391,9 @@ app.get("/getEstadistiques", (req, res) => {
     database: "a22jonorevel_DatosP1"
   });
 
-  //Estableixo la conexió
+  // Establezco la conexión
   conexion.connect(function (error) {
-    //Creo la conexió
+    // Creo la conexión
     if (error) throw error;
     else {
       console.log("Conexió realitzada amb èxit!");
@@ -364,27 +403,27 @@ app.get("/getEstadistiques", (req, res) => {
           console.log("S'han trobat ", result.length, " resultats");
           console.log({ result });
 
-          var process = spawn('py', ["./estadistiques.py"], { input: JSON.stringify(result) });
-          let imageData = Buffer.from([]);
-
-          process.stdout.on('data', function (data) {
-            // Concatenar los datos de salida para obtener la imagen completa
-            imageData = Buffer.concat([imageData, data]);
-          });
+          // Aquí puedes pasar los datos JSON como parámetros de consulta en la URL
+          // Ejemplo: /getEstadistiques?data=<json_data>
+          var jsonData = JSON.stringify(result);
+          var process = spawn('py', ["./estadistiques.py", jsonData]);
 
           process.on('close', (code) => {
             if (code === 0) {
-              // Enviar la imatge como resposta
-              res.setHeader('Content-Type', 'image/png'); // Ajusta el tipo de contenido según el tipo de imagen
-              res.send(imageData);
+              // Después de generar la imagen, sirve la imagen generada
+              const imagePath = './imatges_stats/comandes_per_producte.png'; // Ruta de la imagen generada
+              res.sendFile(imagePath);
             } else {
-              res.status(500).send('Error en el procés Python');
+              console.error('Error al generar la imagen.');
+              res.status(500).send('Error al generar la imagen');
             }
           });
         } else {
           console.log("No s'han trobat resultats");
+          res.status(404).send('No se encontraron resultados');
         }
-        conexion.end(function (error) { //Tanco la conexió
+        conexion.end(function (error) {
+          // Tanco la conexión
           if (error) {
             return console.log("Error" + error.message);
           }
@@ -394,6 +433,8 @@ app.get("/getEstadistiques", (req, res) => {
     }
   });
 });
+
+
 
 // Ruta per obtenir la llista de comandes
 app.get("/getComandes", async (req, res) => {
