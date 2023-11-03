@@ -73,7 +73,9 @@ var sess = { //app.use és el intermediari, middleware
   resave: false, //Obsolet
   saveUninitialized: true,
   data: {
-    comanda_oberta: false
+    comanda_oberta: false,
+    usuariID: null,
+    nick: null
   }
 }
 
@@ -135,12 +137,16 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      req.session.nick = usuari.nick; // Almacena el nick del usuario
-      req.session.usuariID = usuari.id; // Almacena el ID del usuario
-      req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      //req.session.nick = usuari.nick; // Almacena el nick del usuario
+      //req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      sess.data.nick = usuari.nick;
+      sess.data.usuariID = usuari.id;
+      sess.data.comanda_oberta = usuari.comanda_oberta;
+      console.log(req.session.usuariID);
+      //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
       res.json({"mensaje": "Inicio de sesión exitoso"});
-      console.log(nomUsuari);
-      console.log(contrasenya);
+      //console.log(nomUsuari);
+      //console.log(contrasenya);
     } else {
       console.log(nomUsuari);
       console.log(contrasenya);
@@ -286,7 +292,7 @@ app.post("/afegirProducteComanda", async (req, res) => {
         estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
 
-      const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
+      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", nuevaComanda);
       const comandaId = result.insertId;
 
       const comandaProductos = [comandaId, producte.id, producte.quantitat]
@@ -486,16 +492,20 @@ app.post("/pagar", async (req, res) => {
 
   try {
     // Verifica si la comanda con el ID proporcionado existe en la base de datos
-    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [comanda]);
+    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [id]);
 
     if (!comandaExistente.length) {
       return res.status(404).json({ error: "Comanda no trobada" });
     }
 
     // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
-    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, comanda]);
+    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, id]);
 
-    io.emit("comandaActualitzada", { comanda, estat });
+    sess.data.comanda_oberta = false;
+    console.log(sess.data.usuariID);
+    //console.log(req.session.comanda_oberta);
+    await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
+    
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
