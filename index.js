@@ -3,11 +3,11 @@ const express = require('express');
 var session = require('express-session');
 const cors = require("cors");
 const fs = require('fs');
-const multer = require('multer')
 const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
+const multer = require('multer')
 
 const PORT = 3001;
 var spawn = require("child_process").spawn;
