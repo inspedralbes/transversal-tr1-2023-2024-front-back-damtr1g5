@@ -1,7 +1,6 @@
 //Definim totes les constants que necessita el servidor per operar
 const express = require('express');
 var session = require('express-session');
-const multer = require('multer')
 const cors = require("cors");
 const fs = require('fs');
 const multer = require('multer')
@@ -12,28 +11,6 @@ const server = createServer(app);
 
 const PORT = 3001;
 var spawn = require("child_process").spawn;
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './imatges_productes');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './imatges_productes');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -71,7 +48,9 @@ server.listen(PORT, () => {
   console.log('Server running at http://localhost:' + PORT);
 });
 
-app.use(express.static("imatges_productes"))
+app.use('/imatges_productes', express.static('imatges_productes'));
+
+app.use('/imatges_stats', express.static('imatges_stats'))
 
 var mysql = require('mysql2');
 
@@ -408,22 +387,15 @@ app.get("/getEstadistiques", (req, res) => {
           var jsonData = JSON.stringify(result);
           var process = spawn('py', ["./estadistiques.py", jsonData]);
 
-          process.on('close', (code) => {
-            if (code === 0) {
-              // Después de generar la imagen, sirve la imagen generada
-              const imagePath = './imatges_stats/comandes_per_producte.png'; // Ruta de la imagen generada
-              res.sendFile(imagePath);
-            } else {
-              console.error('Error al generar la imagen.');
-              res.status(500).send('Error al generar la imagen');
-            }
+          process.stdout.on('data', (data) => {
+           
+            res.set('Content-Type', 'image/png');
+            res.send(data); // Envia los datos de la imagen como respuesta
           });
         } else {
           console.log("No s'han trobat resultats");
-          res.status(404).send('No se encontraron resultados');
         }
-        conexion.end(function (error) {
-          // Tanco la conexión
+        conexion.end(function (error) { // Tanco la conexión
           if (error) {
             return console.log("Error" + error.message);
           }

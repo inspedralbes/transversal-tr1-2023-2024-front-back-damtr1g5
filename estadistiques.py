@@ -18,9 +18,15 @@ x_values = df['categoria'].value_counts().index
 y_values = df['categoria'].value_counts().values
 plt.bar(x_values, y_values)
 
+# Guarda la imagen en un archivo
 nom_imatge = "comandes_per_producte.png"
-plt.savefig(os.path.join("imatges_stats", nom_imatge))
-print(f"La imagen se ha guardado como 'imatges_stats/{nom_imatge}'")
+image_path = os.path.join("imatges_stats", nom_imatge)
+plt.savefig(image_path)
+
+# Lee el contenido de la imagen y envíalo a la salida estándar
+with open(image_path, 'rb') as image_file:
+    image_content = image_file.read()
+    sys.stdout.buffer.write(image_content)
 
 
 #print(pd.DataFrame.to_json(df))
