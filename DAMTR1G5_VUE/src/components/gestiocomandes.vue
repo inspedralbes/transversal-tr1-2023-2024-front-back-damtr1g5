@@ -62,8 +62,9 @@
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px">
-                <div v-if="imageUrl">
-                    <img :src="imageUrl" alt="Estadísticas" />
+                <div v-if="imatgeGrafic1 && imatgeGrafic2">
+                    <img :src="imatgeGrafic1" alt="Estadísticas comandes per producte" />
+                    <img :src="imatgeGrafic2" alt="Estadísticas comandes per hores" />
                 </div>
             </v-main>
         </v-layout>
@@ -188,7 +189,8 @@ export default {
             comandaspendent: [],
             comandasResum: [],
             ver_info: false,
-            imageUrl: null,
+            imatgeGrafic1: null,
+            imatgeGrafic2: null,
             searchQuery: "",
             searchQueryPreparacio: "",
             searchQueryResum: "",
@@ -239,19 +241,20 @@ export default {
             this.ver_info = true;
         },
         async veureStats() {
-            this.verComandes = false
-            this.verPreparacio = false
-            this.verResum = false
-            this.verStats = true
+            this.verComandes = false;
+            this.verPreparacio = false;
+            this.verResum = false;
+            this.verStats = true;
 
             try {
-                const imageUrl = await getEstadistiques();
-                this.imageUrl = imageUrl;
+                await getEstadistiques();
+                this.imatgeGrafic1 = 'http://localhost:3001/imatges_stats/comandes_per_producte.png'
+                this.imatgeGrafic2 = 'http://localhost:3001/imatges_stats/comandes_por_horas.png'
             } catch (error) {
                 console.error('Error al obtener estadísticas:', error);
             }
-
         },
+
         veurePreparacio() {
             this.verComandes = false;
             this.verPreparacio = true;
