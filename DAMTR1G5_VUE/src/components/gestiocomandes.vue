@@ -179,7 +179,7 @@ import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
-            imatgeComandes: 'http://localhost:3001/imatges_productes/imatge_comanda.png',
+            imatgeComandes: 'http://localhost:3969/imatges_productes/imatge_comanda.png',
             verComandes: false,
             verStats: false,
             verPreparacio: false,
@@ -248,9 +248,9 @@ export default {
 
             try {
                 getEstadistiques();
-                this.imatgeGrafic1 = 'http://localhost:3001/imatges_stats/comandes_per_producte.png';
-                this.imatgeGrafic2 = 'http://localhost:3001/imatges_stats/comandes_por_horas.png';
-                this.imatgeGrafic3 = 'http://localhost:3001/imatges_stats/recaudacio_per_hores.png';
+                this.imatgeGrafic1 = 'http://localhost:3969/imatges_stats/comandes_per_producte.png';
+                this.imatgeGrafic2 = 'http://localhost:3969/imatges_stats/comandes_por_horas.png';
+                this.imatgeGrafic3 = 'http://localhost:3969/imatges_stats/recaudacio_per_hores.png';
             } catch (error) {
                 console.error('Error al obtener estadísticas:', error);
             }

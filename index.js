@@ -9,7 +9,7 @@ const { Server } = require('socket.io');
 const server = createServer(app);
 const multer = require('multer')
 
-const PORT = 3001;
+const PORT = 3969;
 var spawn = require("child_process").spawn;
 
 const storage = multer.diskStorage({
@@ -22,8 +22,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
-
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
