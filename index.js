@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
 var conexion = null; //Se usa en el método de getEstadístiques
 
 app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG");
+  console.log("SERVER RUNNNIG EN EL PUERTO " + PORT );
 });
 
 app.use(express.static("imatges_productes"))
@@ -97,7 +97,6 @@ function executeQuery(query, params = []) {
 
 //Login
 app.post('/login', async (req, res) => {
-
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
     console.log("Usuaris obtinguts amb èxit");
@@ -107,18 +106,24 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      req.session.nick = "Pepe99";
-      req.session.usuariID = 1;
-      req.session.comanda_oberta = false;
-      res.send('Inicio de sesión exitoso');
+      //req.session.nick = usuari.nick; // Almacena el nick del usuario
+      //req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      sess.data.nick = usuari.nick;
+      sess.data.usuariID = usuari.id;
+      sess.data.comanda_oberta = usuari.comanda_oberta;
+      console.log(req.session.usuariID);
+      //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      //console.log(nomUsuari);
+      //console.log(contrasenya);
     } else {
-      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.log(nomUsuari);
+      console.log(contrasenya);
+      res.status(401).json({ "error": "Credenciales incorrectas. Inténtalo de nuevo." });
     }
   } catch (error) {
     res.status(500).json({ error });
   }
-
-
 });
 
 // Ruta per obtenir la informació dels productes
