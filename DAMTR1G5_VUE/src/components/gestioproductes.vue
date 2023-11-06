@@ -37,7 +37,8 @@
                         <v-btn @click="deleteProductes(selected_productes.id), ver_info = false"
                             style="color: red;">Esborrar producte</v-btn>
                         <v-btn @click="verEditar(selected_productes)">Editar Producte</v-btn>
-                    </v-card-actions>
+                        <v-btn @click="activardesactivar(selected_productes)"> {{ selected_productes.estado_producte ===
+                            'activado' ? 'Desactivar' : 'Activar' }}</v-btn> </v-card-actions>
                 </v-card>
             </v-dialog>
             <v-dialog v-model="verAfegirProducte" max-width="400">
@@ -198,8 +199,6 @@ export default {
                     console.error('Error al agregar producto:', error);
                 });
 
-            //location.reload();
-
         },
         actualizarProducte() {
             const formDataEdit = new FormData();
@@ -235,6 +234,36 @@ export default {
 
             this.ver_info = false;
         },
+        async activardesactivar(product) {
+            const nuevoEstado = product.estado_producte === 'activado' ? 'desactivado' : 'activado';
+
+            const formData = new FormData();
+            formData.append('id', product.id);
+            formData.append('categoria', product.categoria);
+            formData.append('nom', product.nom);
+            formData.append('descripcio', product.descripció);
+            formData.append('preu', product.preu);
+            formData.append('url_imatge', product.url_imatge);
+            formData.append('estado_producte', nuevoEstado);
+
+            try {
+                const response = await updateProducte(formData);
+
+                // Verifica si la actualización en el servidor fue exitosa
+                if (response.message === 'Actualització exitosa') {
+                    // Actualiza el estado localmente
+                    product.estado_producte = nuevoEstado;
+                } else {
+                    // Si hubo un problema en el servidor, puedes manejarlo aquí
+                    console.error('Error en la actualización del estado del producto');
+                }
+            } catch (error) {
+                // Maneja errores en la solicitud, como problemas de red
+                console.error('Error en la solicitud de actualización', error);
+            }
+            this.ver_info = false;
+        }
+
     },
     computed: {
         filteredProducts() {

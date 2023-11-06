@@ -227,6 +227,7 @@ app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) =>
   const nuevaDescripcion = req.body.descripcio;
   const nuevoPrecio = req.body.preu;
   const nuevaUrlImagen = req.body.url_imatge;
+  const nuevoEstado = req.body.estado_producte;
 
   if (!productoId) {
     return res.status(400).json({ error: "Falta l'ID del producte" });
@@ -234,8 +235,8 @@ app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) =>
 
   try {
     const result = await executeQuery(
-      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
-      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
+      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
+      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
     );
     console.log("Actualització exitosa");
     res.json({ message: "Actualització exitosa" });
