@@ -65,7 +65,7 @@
                 <div v-if="imatgeGrafic1 && imatgeGrafic2 && imatgeGrafic3">
                     <img :src="imatgeGrafic1" alt="Estadistiques comandes per producte" />
                     <img :src="imatgeGrafic2" alt="Estadistiques comandes per hores" />
-                    <img :src="imatgeGrafic3" alt="Estadistiques recaudació per hores"/>
+                    <img :src="imatgeGrafic3" alt="Estadistiques recaudació per hores" />
                 </div>
             </v-main>
         </v-layout>
@@ -304,15 +304,20 @@ export default {
             }
         },
         aceptarComanda() {
-            console.log("Función estatComanda ejecutada");
             if (this.selected_comanda) {
                 const comandaId = this.selected_comanda.id;
                 const nuevoEstado = 'aprovada';
 
                 estatComanda(comandaId, nuevoEstado)
-                    .then(() => getComandes())
+                    .then(() => {
+                        return getComandes();
+                    })
                     .then((response) => {
-                        this.comandesrecepcio = response;
+                        this.comandasrecepcio = response;
+                        this.comandaspendent = this.comandasrecepcio.comandes.filter(
+                            (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
+                        );
+
                         socket.emit('canviEstat', nuevoEstado + comandaId);
                         console.log("enviat");
                     })
@@ -325,7 +330,6 @@ export default {
             this.ver_info = false;
         },
         eliminarComanda() {
-            console.log("Función estatComanda ejecutada");
             if (this.selected_comanda) {
                 const comandaId = this.selected_comanda.id;
                 const nuevoEstado = 'rebutjada';
@@ -333,8 +337,13 @@ export default {
                 estatComanda(comandaId, nuevoEstado)
                     .then(() => getComandes())
                     .then((response) => {
-                        this.comandesrecepcio = response;
-                        console.log("comanda rechazada")
+                        // Actualiza la lista de comandas excluyendo la comanda eliminada
+                        this.comandasrecepcio = response;
+                        this.comandaspendent = this.comandasrecepcio.comandes.filter(
+                            (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
+                        );
+
+                        console.log("comanda rechazada");
                     })
                     .catch((error) => {
                         console.error("Error al rechazar la comanda:", error);
