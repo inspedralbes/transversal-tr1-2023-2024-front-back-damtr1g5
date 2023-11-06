@@ -29,8 +29,6 @@ export default {
         return {
             imatgeProductes: 'http://localhost:3001/imatges_productes/imatge_productes.jpg',
             imatgeComandes: 'http://localhost:3001/imatges_productes/imatge_comandes.jpg'
-            
-
         }
     },
     methods: {
