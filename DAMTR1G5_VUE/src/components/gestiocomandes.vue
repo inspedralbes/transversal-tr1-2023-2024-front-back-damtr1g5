@@ -63,11 +63,12 @@
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px">
                 <div v-if="imatgeGrafic1 && imatgeGrafic2 && imatgeGrafic3">
-                    <img :src="imatgeGrafic1" alt="Estadistiques comandes per producte" />
-                    <img :src="imatgeGrafic2" alt="Estadistiques comandes per hores" />
-                    <img :src="imatgeGrafic3" alt="Estadistiques recaudació per hores" />
+                    <img :src="imatgeGrafic1" alt="Estadísticas comandes per producto" />
+                    <img :src="imatgeGrafic2" alt="Estadísticas comandes per horas" />
+                    <img :src="imatgeGrafic3" alt="Estadísticas recaudación per horas" />
                 </div>
             </v-main>
+
         </v-layout>
     </div>
     <div class="panell_enpreparacio" v-if="verPreparacio">
@@ -179,7 +180,7 @@ import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
-            imatgeComandes: 'http://localhost:3969/imatges_productes/imatge_comanda.png',
+            imatgeComandes: 'http://localhost:3968/imatges_productes/imatge_comanda.png',
             verComandes: false,
             verStats: false,
             verPreparacio: false,
@@ -248,9 +249,9 @@ export default {
 
             try {
                 getEstadistiques();
-                this.imatgeGrafic1 = 'http://localhost:3969/imatges_stats/comandes_per_producte.png';
-                this.imatgeGrafic2 = 'http://localhost:3969/imatges_stats/comandes_por_horas.png';
-                this.imatgeGrafic3 = 'http://localhost:3969/imatges_stats/recaudacio_per_hores.png';
+                this.imatgeGrafic1 = 'http://localhost:3968/imatges_stats/comandes_per_producte.png';
+                this.imatgeGrafic2 = 'http://localhost:3968/imatges_stats/comandes_por_horas.png';
+                this.imatgeGrafic3 = 'http://localhost:3968/imatges_stats/recaudacio_per_hores.png';
             } catch (error) {
                 console.error('Error al obtener estadísticas:', error);
             }

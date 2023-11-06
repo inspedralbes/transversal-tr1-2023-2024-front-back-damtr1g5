@@ -9,7 +9,7 @@ const { Server } = require('socket.io');
 const server = createServer(app);
 const multer = require('multer')
 
-const PORT = 3969;
+const PORT = 3968;
 var spawn = require("child_process").spawn;
 
 const storage = multer.diskStorage({
