@@ -27,8 +27,8 @@
 export default {
     data() {
         return {
-            imatgeProductes: 'http://localhost:3001/imatge_productes.jpg',
-            imatgeComandes: 'http://localhost:3001/imatge_comandes.jpg'
+            imatgeProductes: 'http://localhost:3001/imatges_productes/imatge_productes.jpg',
+            imatgeComandes: 'http://localhost:3001/imatges_productes/imatge_comandes.jpg'
             
 
         }

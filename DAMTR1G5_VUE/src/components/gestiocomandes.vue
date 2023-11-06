@@ -12,8 +12,10 @@
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-container class="grid-list-md">
+                    <v-text-field v-model="searchQuery" label="Cercar..." outlined dense clearable
+                        prepend-inner-icon="mdi-magnify"></v-text-field>
                     <v-row>
-                        <v-col v-for="comanda in comandaspendent" :key="comanda.id" cols="3">
+                        <v-col v-for="comanda in filteredComandasPendent" :key="comanda.id" cols="3">
                             <v-card>
                                 <v-img :src="imatgeComandes" height="300"></v-img>
                                 Comanda: <v-text>{{ comanda.id }}</v-text><br>
@@ -55,16 +57,14 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureComandes">Gestió de comandes</v-btn>
+                <v-btn @click="veureComandes">Recepció de comandes</v-btn>
                 <v-btn @click="veurePreparacio">En Preparació</v-btn>
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
-            <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
-                <ul v-if="estadisticas">
-                    <li v-for="(valor, clave) in estadisticas" :key="clave">
-                        {{ clave }}: {{ valor }}
-                    </li>
-                </ul>
+            <v-main class="d-flex align-center justify-center" style="min-height: 300px">
+                <div v-if="imageUrl">
+                    <img :src="imageUrl" alt="Estadísticas" />
+                </div>
             </v-main>
         </v-layout>
     </div>
@@ -74,13 +74,15 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureComandes">Gestió de comandes</v-btn>
+                <v-btn @click="veureComandes">Recepció de comandes</v-btn>
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-container class="grid-list-md">
+                    <v-text-field v-model="searchQueryPreparacio" label="Cercar..." outlined dense clearable
+                        prepend-inner-icon="mdi-magnify"></v-text-field>
                     <v-row>
-                        <v-col v-for="comanda in comandesPreparacio" :key="comanda.id" cols="3">
+                        <v-col v-for="comanda in filteredComandasPreparacio" :key="comanda.id" cols="3">
                             <v-card :style="{ 'background-color': comanda.backgroundColor, 'color': comanda.color }">
                                 <v-img :src="imatgeComandes" height="300"></v-img>
                                 Comanda: <v-text>{{ comanda.id }}</v-text><br>
@@ -122,14 +124,16 @@
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
-                <v-btn @click="veureComandes">Gestió de comandes</v-btn>
+                <v-btn @click="veureComandes">Recepció de comandes</v-btn>
                 <v-btn @click="veureStats">Mostrar Estadístiques</v-btn>
                 <v-btn @click="veurePreparacio">En Preparació</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
                 <v-container class="grid-list-md">
+                    <v-text-field v-model="searchQueryResum" label="Cercar..." outlined dense clearable
+                        prepend-inner-icon="mdi-magnify"></v-text-field>
                     <v-row>
-                        <v-col v-for="comanda in comandesrecepcio.comandes" :key="comanda.id" cols="3">
+                        <v-col v-for="comanda in filteredComandasResum" :key="comanda.id" cols="3">
                             <v-card>
                                 <v-img :src="imatgeComandes" height="300"></v-img>
                                 Comanda: <v-text>{{ comanda.id }}</v-text><br>
@@ -173,22 +177,27 @@ import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
-            imatgeComandes: 'http://localhost:3001/imatge_comanda.png',
+            imatgeComandes: 'http://localhost:3001/imatges_productes/imatge_comanda.png',
             verComandes: false,
             verStats: false,
             verPreparacio: false,
             verResum: false,
             comandesrecepcio: [],
-            comandesPreparacio: null,
+            comandesPreparacio: [],
             selected_comanda: [],
             comandaspendent: [],
+            comandasResum: [],
             ver_info: false,
-            estadisticas: null,
+            imageUrl: null,
+            searchQuery: "",
+            searchQueryPreparacio: "",
+            searchQueryResum: "",
 
         }
     },
     created() {
         this.veureComandes();
+
 
         socket.on("novaComanda", (comandas) => {
             console.log("Nueva comanda recibida:", comandas);
@@ -200,10 +209,7 @@ export default {
     },
 
     methods: {
-        obtenerComandas() {
-            getComandes().then(response => { this.comandesrecepcio = response; })
-            this.verComandes = true;
-        },
+
         async veureComandes() {
             // Realiza la obtención de comandas en este método
             try {
@@ -239,24 +245,23 @@ export default {
             this.verStats = true
 
             try {
-                this.estadisticas = await getEstadistiques()
-
+                const imageUrl = await getEstadistiques();
+                this.imageUrl = imageUrl;
             } catch (error) {
-                console.log('Error al obtener estadistiques: ', error)
+                console.error('Error al obtener estadísticas:', error);
             }
 
         },
         veurePreparacio() {
-            this.verComandes = false
-            this.verPreparacio = true
-            this.verResum = false
-            this.verStats = false
+            this.verComandes = false;
+            this.verPreparacio = true;
+            this.verResum = false;
+            this.verStats = false;
 
             this.comandesPreparacio = this.comandesrecepcio.comandes
                 .filter(comanda => comanda.estat === 'aprovada')
                 .sort((a, b) => new Date(b.datacomanda) - new Date(a.datacomanda));
 
-            // Calcular el tiempo transcurrido y asignar colores
             const ahora = new Date();
             this.comandesPreparacio.forEach(comanda => {
                 const tiempoTranscurrido = (ahora - new Date(comanda.datacomanda)) / (1000 * 60); // Tiempo en minutos
@@ -273,19 +278,13 @@ export default {
                     comanda.backgroundColor = 'green';
                 }
             });
-
         },
         veureResum() {
             this.verComandes = false
             this.verPreparacio = false
             this.verResum = true
             this.verStats = false
-
-            if (this.selected_comanda && this.selected_comanda.estat === 'pendent') {
-                comanda.color = 'black';
-            } else {
-                comanda.color = 'green'
-            }
+            this.comandasResum = this.comandesrecepcio.comandes;
         },
         calcularTotal() {
             if (this.selected_comanda && this.selected_comanda.productes) {
@@ -310,6 +309,8 @@ export default {
                     .then(() => getComandes())
                     .then((response) => {
                         this.comandesrecepcio = response;
+                        socket.emit('canviEstat', nuevoEstado + comandaId);
+                        console.log("enviat");
                     })
                     .catch((error) => {
                         console.error("Error al aprobar la comanda:", error);
@@ -346,7 +347,40 @@ export default {
             }
             return 'No especificada';
         },
-    }
+    },
+    computed: {
+        filteredComandasPendent() {
+            const query = this.searchQuery.toLowerCase().trim();
+            if (query === "") {
+                return this.comandaspendent;
+            } else {
+                return this.comandaspendent.filter((comanda) => {
+                    return comanda.id.toString().includes(query);
+                });
+            }
+        },
+        filteredComandasPreparacio() {
+            const query = this.searchQueryPreparacio.toLowerCase().trim();
+            if (query === "") {
+                return this.comandesPreparacio;
+            } else {
+                return this.comandesPreparacio.filter((comanda) => {
+                    return comanda.id.toString().includes(query);
+                });
+            }
+        },
+        filteredComandasResum() {
+            const query = this.searchQueryResum.toLowerCase().trim();
+            if (query === "") {
+                return this.comandasResum
+            } else {
+                return this.comandasResum.filter((comanda) => {
+                    return comanda.id.toString().includes(query);
+                });
+            }
+        },
+    },
+
 }
 </script>
 
