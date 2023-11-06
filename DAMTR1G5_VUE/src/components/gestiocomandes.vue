@@ -62,9 +62,10 @@
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px">
-                <div v-if="imatgeGrafic1 && imatgeGrafic2">
-                    <img :src="imatgeGrafic1" alt="Estadísticas comandes per producte" />
-                    <img :src="imatgeGrafic2" alt="Estadísticas comandes per hores" />
+                <div v-if="imatgeGrafic1 && imatgeGrafic2 && imatgeGrafic3">
+                    <img :src="imatgeGrafic1" alt="Estadistiques comandes per producte" />
+                    <img :src="imatgeGrafic2" alt="Estadistiques comandes per hores" />
+                    <img :src="imatgeGrafic3" alt="Estadistiques recaudació per hores"/>
                 </div>
             </v-main>
         </v-layout>
@@ -191,6 +192,7 @@ export default {
             ver_info: false,
             imatgeGrafic1: null,
             imatgeGrafic2: null,
+            imatgeGrafic3: null,
             searchQuery: "",
             searchQueryPreparacio: "",
             searchQueryResum: "",
@@ -199,8 +201,6 @@ export default {
     },
     created() {
         this.veureComandes();
-
-
         socket.on("novaComanda", (comandas) => {
             console.log("Nueva comanda recibida:", comandas);
 
@@ -240,16 +240,17 @@ export default {
             console.log('selected_comandes:', this.selected_comanda);
             this.ver_info = true;
         },
-        async veureStats() {
+        veureStats() {
             this.verComandes = false;
             this.verPreparacio = false;
             this.verResum = false;
             this.verStats = true;
 
             try {
-                await getEstadistiques();
-                this.imatgeGrafic1 = 'http://localhost:3001/imatges_stats/comandes_per_producte.png'
-                this.imatgeGrafic2 = 'http://localhost:3001/imatges_stats/comandes_por_horas.png'
+                getEstadistiques();
+                this.imatgeGrafic1 = 'http://localhost:3001/imatges_stats/comandes_per_producte.png';
+                this.imatgeGrafic2 = 'http://localhost:3001/imatges_stats/comandes_por_horas.png';
+                this.imatgeGrafic3 = 'http://localhost:3001/imatges_stats/recaudacio_per_hores.png';
             } catch (error) {
                 console.error('Error al obtener estadísticas:', error);
             }

@@ -85,7 +85,6 @@ export function getEstadistiques() {
         })
         .then((response) => {
             if (response.ok) {
-                // La solicitud se realizó correctamente, pero no necesitas hacer nada con la respuesta aquí.
                 console.log('Solicitud de estadísticas completada con éxito');
             } else {
                 throw new Error(`Error al obtener estadísticas: ${response.status} - ${response.statusText}`);

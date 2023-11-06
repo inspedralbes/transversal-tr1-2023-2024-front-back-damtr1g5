@@ -377,8 +377,8 @@ app.get("/getEstadistiques", (req, res) => {
     else {
       console.log("Conexió realitzada amb èxit!");
       conexion.query(
-        "SELECT cp.comanda_id, cp.producte_id, p.categoria, c.datacomanda, " +
-        "HOUR(c.datacomanda) AS hora_comanda " +
+        "SELECT cp.comanda_id,cp.producte_id,p.categoria, c.datacomanda, HOUR(c.datacomanda) AS hora_comanda," +
+        "(SELECT SUM(productes.preu * cp.quantitat) FROM productes WHERE productes.id = cp.producte_id) AS cost_total " +
         "FROM comanda_productes cp " +
         "INNER JOIN productes p ON cp.producte_id = p.id " +
         "INNER JOIN comanda c ON cp.comanda_id = c.id",
