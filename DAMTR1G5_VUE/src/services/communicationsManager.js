@@ -1,6 +1,6 @@
 export async function getProductes() {
     console.log("Fetching productes...")
-    const response = await fetch('http://localhost:3001/getProductes')
+    const response = await fetch('http://localhost:3969/getProductes')
     const productes = await response.json()
     console.log(productes)
     return productes
@@ -9,7 +9,7 @@ export async function getProductes() {
 export async function addProducte(dadesProducte) {
     console.log("datos recibidos: " + dadesProducte)
 
-    const response = await fetch(`http://localhost:3001/insertarProducto`,
+    const response = await fetch(`http://localhost:3969/insertarProducto`,
         {
             method: 'POST',
             body: dadesProducte
@@ -22,7 +22,7 @@ export async function addProducte(dadesProducte) {
 
 export async function deleteProducte(id) {
     console.log("Eliminando producto con ID: " + id);
-    const response = await fetch(`http://localhost:3001/eliminarProducto`, {
+    const response = await fetch(`http://localhost:3969/eliminarProducto`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export async function deleteProducte(id) {
 export async function updateProducte(dadesEdicio) {
     console.log("datos recibidos: " + dadesEdicio)
 
-    const response = await fetch(`http://localhost:3001/actualizarProducto`,
+    const response = await fetch(`http://localhost:3969/actualizarProducto`,
         {
             method: 'POST',
             body: dadesEdicio,
@@ -54,7 +54,7 @@ export async function updateProducte(dadesEdicio) {
 
 export async function getComandes() {
     console.log("Fetching comandes...")
-    const response = await fetch('http://localhost:3001/getComandes')
+    const response = await fetch('http://localhost:3969/getComandes')
     const comandes = await response.json()
     console.log(comandes)
     return comandes
@@ -62,7 +62,7 @@ export async function getComandes() {
 
 export async function estatComanda(comandaId, nuevoEstado) {
     try {
-        const response = await fetch('http://localhost:3001/estatComanda', {
+        const response = await fetch('http://localhost:3969/estatComanda', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -78,25 +78,28 @@ export async function estatComanda(comandaId, nuevoEstado) {
     }
 }
 
-export async function getEstadistiques() {
+export function getEstadistiques() {
     try {
-        const response = await fetch('http://localhost:3001/getEstadistiques', {
+        fetch('http://localhost:3969/getEstadistiques', {
             method: 'GET'
+        })
+        .then((response) => {
+            if (response.ok) {
+                console.log('Solicitud de estadísticas completada con éxito');
+            } else {
+                throw new Error(`Error al obtener estadísticas: ${response.status} - ${response.statusText}`);
+            }
+        })
+        .catch((error) => {
+            console.error('Error en getEstadistiques:', error);
+            throw error;
         });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const imageUrl = URL.createObjectURL(blob);
-            console.log(imageUrl);
-            return imageUrl;
-        } else {
-            throw new Error(`Error al obtener estadísticas: ${response.status} - ${response.statusText}`);
-        }
     } catch (error) {
         console.error('Error en getEstadistiques:', error);
         throw error;
     }
 }
+
 
 
 

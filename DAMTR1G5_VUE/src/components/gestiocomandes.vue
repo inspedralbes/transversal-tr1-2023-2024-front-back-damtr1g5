@@ -62,8 +62,10 @@
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px">
-                <div v-if="imageUrl">
-                    <img :src="imageUrl" alt="Estadísticas" />
+                <div v-if="imatgeGrafic1 && imatgeGrafic2 && imatgeGrafic3">
+                    <img :src="imatgeGrafic1" alt="Estadistiques comandes per producte" />
+                    <img :src="imatgeGrafic2" alt="Estadistiques comandes per hores" />
+                    <img :src="imatgeGrafic3" alt="Estadistiques recaudació per hores" />
                 </div>
             </v-main>
         </v-layout>
@@ -177,7 +179,7 @@ import { socket, state } from "@/services/socket"
 export default {
     data() {
         return {
-            imatgeComandes: 'http://localhost:3001/imatges_productes/imatge_comanda.png',
+            imatgeComandes: 'http://localhost:3969/imatges_productes/imatge_comanda.png',
             verComandes: false,
             verStats: false,
             verPreparacio: false,
@@ -188,7 +190,9 @@ export default {
             comandaspendent: [],
             comandasResum: [],
             ver_info: false,
-            imageUrl: null,
+            imatgeGrafic1: null,
+            imatgeGrafic2: null,
+            imatgeGrafic3: null,
             searchQuery: "",
             searchQueryPreparacio: "",
             searchQueryResum: "",
@@ -197,8 +201,6 @@ export default {
     },
     created() {
         this.veureComandes();
-
-
         socket.on("novaComanda", (comandas) => {
             console.log("Nueva comanda recibida:", comandas);
 
@@ -238,20 +240,22 @@ export default {
             console.log('selected_comandes:', this.selected_comanda);
             this.ver_info = true;
         },
-        async veureStats() {
-            this.verComandes = false
-            this.verPreparacio = false
-            this.verResum = false
-            this.verStats = true
+        veureStats() {
+            this.verComandes = false;
+            this.verPreparacio = false;
+            this.verResum = false;
+            this.verStats = true;
 
             try {
-                const imageUrl = await getEstadistiques();
-                this.imageUrl = imageUrl;
+                getEstadistiques();
+                this.imatgeGrafic1 = 'http://localhost:3969/imatges_stats/comandes_per_producte.png';
+                this.imatgeGrafic2 = 'http://localhost:3969/imatges_stats/comandes_por_horas.png';
+                this.imatgeGrafic3 = 'http://localhost:3969/imatges_stats/recaudacio_per_hores.png';
             } catch (error) {
                 console.error('Error al obtener estadísticas:', error);
             }
-
         },
+
         veurePreparacio() {
             this.verComandes = false;
             this.verPreparacio = true;
@@ -300,15 +304,20 @@ export default {
             }
         },
         aceptarComanda() {
-            console.log("Función estatComanda ejecutada");
             if (this.selected_comanda) {
                 const comandaId = this.selected_comanda.id;
                 const nuevoEstado = 'aprovada';
 
                 estatComanda(comandaId, nuevoEstado)
-                    .then(() => getComandes())
+                    .then(() => {
+                        return getComandes();
+                    })
                     .then((response) => {
-                        this.comandesrecepcio = response;
+                        this.comandasrecepcio = response;
+                        this.comandaspendent = this.comandasrecepcio.comandes.filter(
+                            (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
+                        );
+
                         socket.emit('canviEstat', nuevoEstado + comandaId);
                         console.log("enviat");
                     })
@@ -321,7 +330,6 @@ export default {
             this.ver_info = false;
         },
         eliminarComanda() {
-            console.log("Función estatComanda ejecutada");
             if (this.selected_comanda) {
                 const comandaId = this.selected_comanda.id;
                 const nuevoEstado = 'rebutjada';
@@ -329,8 +337,13 @@ export default {
                 estatComanda(comandaId, nuevoEstado)
                     .then(() => getComandes())
                     .then((response) => {
-                        this.comandesrecepcio = response;
-                        console.log("comanda rechazada")
+                        // Actualiza la lista de comandas excluyendo la comanda eliminada
+                        this.comandasrecepcio = response;
+                        this.comandaspendent = this.comandasrecepcio.comandes.filter(
+                            (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
+                        );
+
+                        console.log("comanda rechazada");
                     })
                     .catch((error) => {
                         console.error("Error al rechazar la comanda:", error);

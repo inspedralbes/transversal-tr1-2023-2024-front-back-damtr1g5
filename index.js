@@ -9,7 +9,7 @@ const { Server } = require('socket.io');
 const server = createServer(app);
 const multer = require('multer')
 
-const PORT = 3001;
+const PORT = 3969;
 var spawn = require("child_process").spawn;
 
 var mysql = require('mysql2');
@@ -24,8 +24,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
-
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
@@ -387,8 +385,8 @@ app.get("/getEstadistiques", (req, res) => {
     else {
       console.log("Conexió realitzada amb èxit!");
       conexion.query(
-        "SELECT cp.comanda_id, cp.producte_id, p.categoria, c.datacomanda, " +
-        "HOUR(c.datacomanda) AS hora_comanda " +
+        "SELECT cp.comanda_id,cp.producte_id,p.categoria, c.datacomanda, HOUR(c.datacomanda) AS hora_comanda," +
+        "(SELECT SUM(productes.preu * cp.quantitat) FROM productes WHERE productes.id = cp.producte_id) AS cost_total " +
         "FROM comanda_productes cp " +
         "INNER JOIN productes p ON cp.producte_id = p.id " +
         "INNER JOIN comanda c ON cp.comanda_id = c.id",
