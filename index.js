@@ -12,6 +12,8 @@ const multer = require('multer')
 const PORT = 3001;
 var spawn = require("child_process").spawn;
 
+var mysql = require('mysql2');
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, './imatges_productes');
@@ -54,7 +56,7 @@ app.use('/imatges_productes', express.static('imatges_productes'));
 
 app.use('/imatges_stats', express.static('imatges_stats'))
 
-var mysql = require('mysql2');
+
 
 
 
