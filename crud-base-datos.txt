@@ -3,6 +3,7 @@ CREATE TABLE comanda (
     id_usuari INT,
     entrega TIME,
     estat VARCHAR(255),
+    datacomanda TIMESTAMP,
     FOREIGN KEY (id_usuari) REFERENCES usuaris (id)
 );
 
@@ -59,7 +60,7 @@ VALUES
   (19, 'Pizzes', 'Pizza Pepperoni', 'Pizza amb mozzarella i rodanxes de peperoni', 10.25, 'pizza_pepperoni.jpeg'),
   (20, 'Pastes', 'Pasta Primavera', 'Pasta amb verdures de primavera i salsa de crema', 12.25, 'pasta_primavera.jpg');
 
-INSERT INTO usuaris VALUES (1,'Pepe','Garcia Fernandez','1234','ES879121');
+INSERT INTO usuaris VALUES (1,'Pepe','Garcia Fernandez','Pepe99','1234','ES879121',false);
 
 INSERT INTO comanda VALUES (1,1,NULL,'pendent'),
                            (2,1,NULL,'aprovada');
