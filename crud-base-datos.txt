@@ -3,6 +3,7 @@ CREATE TABLE comanda (
     id_usuari INT,
     entrega TIME,
     estat VARCHAR(255),
+    datacomanda TIMESTAMP,
     FOREIGN KEY (id_usuari) REFERENCES usuaris (id)
 );
 
@@ -12,7 +13,8 @@ CREATE TABLE productes (
     nom VARCHAR(255),
     descripció VARCHAR(255),
     preu DECIMAL(10, 2),  -- Decimal per emmagatzemar 10 dígits, 2 d'ells per als decimals
-    url_imatge VARCHAR(255)  -- Canvi en el nom de la columna
+    url_imatge VARCHAR(255),  -- Canvi en el nom de la columna
+    estado_producte VARCHAR(255) DEFAULT 'desactivado'
 );
 
 CREATE TABLE comanda_productes (

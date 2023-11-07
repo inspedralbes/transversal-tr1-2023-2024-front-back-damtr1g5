@@ -7,31 +7,60 @@ const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const server = createServer(app);
-const io = new Server(server);
-const PORT = 3001;
+const multer = require('multer')
+
+const PORT = 3968;
 var spawn = require("child_process").spawn;
 
-io.on("connection", (socket) => {
-  console.log("Nuevo cliente conectado");
+var mysql = require('mysql2');
 
-  // Escucha eventos de Socket.io aquí
-  socket.on("nuevaComanda", (comanda) => {
-    // Emitir la nueva comanda a todos los clientes conectados
-    io.emit("nuevaComanda", comanda);
-  });
-
-  // Otros eventos de Socket.io pueden manejarse aquí
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './imatges_productes');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
+
+const upload = multer({ storage: storage });
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
-app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG");
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  }
 });
 
-app.use(express.static("imatges_productes"))
+io.on('connection', (socket) => {
+  socket.on('canviEstat', (msg) => {
+    console.log("rebut");
+    console.log(msg);
+    io.emit('canviEstat', msg);
+  });
+});
 
-var mysql = require('mysql2');
+/*app.listen(PORT, function () {
+  console.log("SERVER RUNNNIG AT PORT " + PORT);
+});*/
+
+server.listen(PORT, () => {
+  console.log('Server running at http://localhost:' + PORT);
+});
+
+app.use('/imatges_productes', express.static('imatges_productes'));
+
+app.use('/imatges_stats', express.static('imatges_stats'))
+
+
+
+
+
+app.use('/imatges_productes', express.static('imatges_productes'));
+
+app.use('/imatges_stats', express.static('imatges_stats'));
 
 //Datos para la conexión en la base de datos, se usa 1 vez para cada ruta
 const dbConfig = {
@@ -46,7 +75,9 @@ var sess = { //app.use és el intermediari, middleware
   resave: false, //Obsolet
   saveUninitialized: true,
   data: {
-    comanda_oberta: false
+    comanda_oberta: false,
+    usuariID: null,
+    nick: null
   }
 }
 
@@ -55,20 +86,22 @@ app.use(session(sess));
 app.use(express.json());
 
 //Utilizem el mòdul "cors" per poder realitzar les operacions 
-app.use(cors({
+/*app.use(cors({
   origin: function (origin, callback) {
     return callback(null, true);
   }
-}));
+}));*/
+
+app.use(cors());
 
 
-app.use((req, res, next) => {
+/*app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
-})
+})*/
 
 // Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
@@ -95,9 +128,8 @@ function executeQuery(query, params = []) {
   });
 }
 
-//Login
+//Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
-
   try {
     const result = await executeQuery("SELECT id,nick,contrasenya,comanda_oberta FROM usuaris");
     console.log("Usuaris obtinguts amb èxit");
@@ -107,18 +139,24 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      req.session.nick = "Pepe99";
-      req.session.usuariID = 1;
-      req.session.comanda_oberta = false;
-      res.send('Inicio de sesión exitoso');
+      //req.session.nick = usuari.nick; // Almacena el nick del usuario
+      //req.session.usuariID = usuari.id; // Almacena el ID del usuario
+      sess.data.nick = usuari.nick;
+      sess.data.usuariID = usuari.id;
+      sess.data.comanda_oberta = usuari.comanda_oberta;
+      console.log(req.session.usuariID);
+      //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      //console.log(nomUsuari);
+      //console.log(contrasenya);
     } else {
-      res.send('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.log(nomUsuari);
+      console.log(contrasenya);
+      res.status(401).json({ "error": "Credenciales incorrectas. Inténtalo de nuevo." });
     }
   } catch (error) {
     res.status(500).json({ error });
   }
-
-
 });
 
 // Ruta per obtenir la informació dels productes
@@ -133,20 +171,21 @@ app.get("/getProductes", async (req, res) => {
 });
 
 // Ruta per inserir un producte a la base de dades
-app.post("/insertarProducto", async (req, res) => {
-  const { categoria, nom, descripció, preu, url_imatge } = req.body;
+app.post("/insertarProducto", upload.single('imatge'), async (req, res) => {
+  const { categoria, nom, descripcio, preu, url_imatge } = req.body;
+  console.log(req.body)
 
-  if (!categoria || !nom || !descripció || !preu || !url_imatge) {
-    return res.status(400).json({ error: "Falten dades obligatòries" });
+  if (!categoria || !nom || !descripcio || !preu || !url_imatge) {
+    return res.status(400).json({ error: "Faltan datos obligatorios" });
   }
 
   try {
     const result = await executeQuery(
       "INSERT INTO productes (categoria, nom, descripció, preu, url_imatge) VALUES (?, ?, ?, ?, ?)",
-      [categoria, nom, descripció, preu, url_imatge]
+      [categoria, nom, descripcio, preu, url_imatge]
     );
-    console.log("Inserció exitosa");
-    res.json({ message: "Inserció exitosa" });
+    console.log("Inserción exitosa");
+    res.json({ message: "Inserción exitosa" });
   } catch (error) {
     res.status(500).json({ error });
   }
@@ -161,6 +200,17 @@ app.delete("/eliminarProducto", async (req, res) => {
   }
 
   try {
+    const [product] = await executeQuery("SELECT url_imatge FROM productes WHERE id = ?", [productoId])
+
+    const imagePath = `./imatges_productes/${product.url_imatge}`
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.error("Error al eliminar el archivo de imagen", err);
+      } else {
+        console.log("Imagen eliminada con éxito");
+      }
+    });
+
     const result = await executeQuery("DELETE FROM productes WHERE id = ?", [productoId]);
     console.log("Eliminació exitosa");
     res.json({ message: "Eliminació exitosa" });
@@ -170,13 +220,14 @@ app.delete("/eliminarProducto", async (req, res) => {
 });
 
 // Ruta per actualitzar un producte de la base de dades
-app.post("/actualizarProducto", async (req, res) => {
+app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) => {
   const productoId = req.body.id;
   const nuevaCategoria = req.body.categoria;
   const nuevoNombre = req.body.nom;
-  const nuevaDescripcion = req.body.descripció;
+  const nuevaDescripcion = req.body.descripcio;
   const nuevoPrecio = req.body.preu;
   const nuevaUrlImagen = req.body.url_imatge;
+  const nuevoEstado = req.body.estado_producte;
 
   if (!productoId) {
     return res.status(400).json({ error: "Falta l'ID del producte" });
@@ -184,8 +235,8 @@ app.post("/actualizarProducto", async (req, res) => {
 
   try {
     const result = await executeQuery(
-      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
-      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
+      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
+      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
     );
     console.log("Actualització exitosa");
     res.json({ message: "Actualització exitosa" });
@@ -244,7 +295,7 @@ app.post("/afegirProducteComanda", async (req, res) => {
         estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
 
-      const result = await executeQuery("INSERT INTO comanda SET ?", nuevaComanda);
+      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", nuevaComanda);
       const comandaId = result.insertId;
 
       const comandaProductos = [comandaId, producte.id, producte.quantitat]
@@ -321,7 +372,6 @@ app.post("/editarComanda", async (req, res) => {
 
 //Agafar informació per estadístiques
 app.get("/getEstadistiques", (req, res) => {
-
   conexion = mysql.createConnection({
     host: "dam.inspedralbes.cat",
     user: "a22jonorevel_usuario",
@@ -329,48 +379,47 @@ app.get("/getEstadistiques", (req, res) => {
     database: "a22jonorevel_DatosP1"
   });
 
-  //Estableixo la conexió
+  // Establezco la conexión
   conexion.connect(function (error) {
-    //Creo la conexió
+    // Creo la conexión
     if (error) throw error;
     else {
       console.log("Conexió realitzada amb èxit!");
-      conexion.query("SELECT * FROM comanda_productes JOIN productes ON (comanda_productes.producte_id=productes.id) ", function (err, result) {
-        if (err) throw err;
-        if (result) {
-          console.log("S'han trobat ", result.length, " resultats");
-          console.log({ result });
+      conexion.query(
+        "SELECT cp.comanda_id,cp.producte_id,p.categoria, c.datacomanda, HOUR(c.datacomanda) AS hora_comanda," +
+        "(SELECT SUM(productes.preu * cp.quantitat) FROM productes WHERE productes.id = cp.producte_id) AS cost_total " +
+        "FROM comanda_productes cp " +
+        "INNER JOIN productes p ON cp.producte_id = p.id " +
+        "INNER JOIN comanda c ON cp.comanda_id = c.id",
+        function (err, result) {
+          if (err) throw err;
+          if (result) {
+            console.log("S'han trobat ", result.length, " resultats");
+            console.log({ result });
 
-          var process = spawn('py', ["./estadistiques.py", JSON.stringify({ result })]);
-          let imageData = Buffer.from([]);
+            var jsonData = JSON.stringify(result);
+            var process = spawn('python3', ["./estadistiques.py", jsonData]);
 
-          process.stdout.on('data', function (data) {
-            // Concatenar los datos de salida para obtener la imagen completa
-            imageData = Buffer.concat([imageData, data]);
-          });
+            process.stdout.on('data', (data) => {
 
-          process.on('close', (code) => {
-            if (code === 0) {
-              // Enviar la imatge como resposta
-              res.setHeader('Content-Type', 'image/png'); // Ajusta el tipo de contenido según el tipo de imagen
-              res.send(imageData);
-            } else {
-              res.status(500).send('Error en el procés Python');
-            }
-          });
-        } else {
-          console.log("No s'han trobat resultats");
-        }
-        conexion.end(function (error) { //Tanco la conexió
-          if (error) {
-            return console.log("Error" + error.message);
+              res.set('Content-Type', 'image/png');
+              res.send(data); // Envia los datos de la imagen como respuesta
+            });
+          } else {
+            console.log("No s'han trobat resultats");
           }
-          console.log("Es tanca la conexió amb la base de dades");
+          conexion.end(function (error) { // Tanco la conexión
+            if (error) {
+              return console.log("Error" + error.message);
+            }
+            console.log("Es tanca la conexió amb la base de dades");
+          });
         });
-      });
     }
   });
 });
+
+
 
 // Ruta per obtenir la llista de comandes
 app.get("/getComandes", async (req, res) => {
@@ -427,6 +476,8 @@ app.put("/estatComanda", async (req, res) => {
   }
 });
 
+
+
 //Pagar
 app.post("/pagar", async (req, res) => {
 
@@ -441,16 +492,20 @@ app.post("/pagar", async (req, res) => {
 
   try {
     // Verifica si la comanda con el ID proporcionado existe en la base de datos
-    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [comanda]);
+    const comandaExistente = await executeQuery("SELECT * FROM comanda WHERE id = ?", [id]);
 
     if (!comandaExistente.length) {
       return res.status(404).json({ error: "Comanda no trobada" });
     }
 
     // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
-    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, comanda]);
+    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, id]);
 
-    io.emit("comandaActualitzada", { comanda, estat });
+    sess.data.comanda_oberta = false;
+    console.log(sess.data.usuariID);
+    //console.log(req.session.comanda_oberta);
+    await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
+    
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
