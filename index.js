@@ -324,13 +324,33 @@ app.post("/afegirProducteComanda", async (req, res) => {
 
   else {
     try {
-      const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda");
+      var result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda");
 
-      const comandaProductos = [result.id_comanda_actual, req.session.usuariID, producte.id]
-      await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+      //console.log(result);
+      id_comanda = result[0].id_comanda_actual;
+      result = await executeQuery("SELECT * FROM comanda_productes WHERE comanda_id = ?", id_comanda);
+      console.log(result);
+      let producte_repetit = false;
+      for (const producte_llista of result) {
+        if (producte_llista.producte_id === producte.id) {
+          producte_repetit = true;
+        }
+      }
+
+      if (!producte_repetit) {
+        const comandaProductos = [result[0].comanda_id, producte.id, producte.quantitat];
+        await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES (?)", [comandaProductos]);
+      }
+      else {
+        const comandaProductos = [result[0].comanda_id, producte.id, producte.quantitat]
+        console.log(comandaProductos[0]);
+        console.log(comandaProductos[1]);
+        console.log(comandaProductos[2]);
+        await executeQuery("UPDATE comanda_productes SET quantitat = quantitat + ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
+      }
 
       // Emitre la nova comanda al client en temps real
-      io.emit("novaComanda", nuevaComanda);
+      //io.emit("novaComanda", nuevaComanda);
 
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
