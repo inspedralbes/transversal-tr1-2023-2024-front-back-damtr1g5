@@ -6,7 +6,7 @@ export const state = reactive({
     comanda: []
 })
 
-const URL = process.env.NODE_ENV === "production" ? undefined : "http://localhost:3968"
+const URL = process.env.NODE_ENV === "production" ? undefined : "http://localhost:3968/"
 
 export const socket = io(URL)
 

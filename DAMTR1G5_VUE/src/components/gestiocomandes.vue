@@ -18,8 +18,8 @@
                         <v-col v-for="comanda in filteredComandasPendent" :key="comanda.id" cols="3">
                             <v-card>
                                 <v-img :src="imatgeComandes" height="300"></v-img>
-                                Comanda: <v-text>{{ comanda.id }}</v-text><br>
-                                <v-btn @click="verInfo(comanda)">Más info</v-btn>
+                                <v-card-title>Comanda: {{ comanda.id }} </v-card-title>
+                                <v-card-actions><v-btn @click="verInfo(comanda)">Más info</v-btn></v-card-actions>
                             </v-card>
                         </v-col>
                     </v-row>
@@ -88,8 +88,8 @@
                         <v-col v-for="comanda in filteredComandasPreparacio" :key="comanda.id" cols="3">
                             <v-card :style="{ 'background-color': comanda.backgroundColor, 'color': comanda.color }">
                                 <v-img :src="imatgeComandes" height="300"></v-img>
-                                Comanda: <v-text>{{ comanda.id }}</v-text><br>
-                                <v-btn @click="verInfo(comanda)">Más info</v-btn>
+                                <v-card-title>Comanda: {{ comanda.id }}</v-card-title>
+                            <v-card-actions><v-btn @click="verInfo(comanda)">Más info</v-btn></v-card-actions> 
                             </v-card>
                         </v-col>
                     </v-row>
@@ -139,8 +139,8 @@
                         <v-col v-for="comanda in filteredComandasResum" :key="comanda.id" cols="3">
                             <v-card>
                                 <v-img :src="imatgeComandes" height="300"></v-img>
-                                Comanda: <v-text>{{ comanda.id }}</v-text><br>
-                                <v-btn @click="verInfo(comanda)">Más info</v-btn>
+                                <v-card-title>Comanda: {{ comanda.id }}</v-card-title>
+                                <v-card-actions><v-btn @click="verInfo(comanda)">Más info</v-btn></v-card-actions>
                             </v-card>
                         </v-col>
                     </v-row>
@@ -315,12 +315,11 @@ export default {
                     })
                     .then((response) => {
                         this.comandasrecepcio = response;
+                        socket.emit('canviEstat', nuevoEstado + comandaId);
+                        console.log("enviat");
                         this.comandaspendent = this.comandasrecepcio.comandes.filter(
                             (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
                         );
-
-                        socket.emit('canviEstat', nuevoEstado + comandaId);
-                        console.log("enviat");
                     })
                     .catch((error) => {
                         console.error("Error al aprobar la comanda:", error);
@@ -338,13 +337,12 @@ export default {
                 estatComanda(comandaId, nuevoEstado)
                     .then(() => getComandes())
                     .then((response) => {
-                        // Actualiza la lista de comandas excluyendo la comanda eliminada
                         this.comandasrecepcio = response;
+                        socket.emit('canviEstat', nuevoEstado + comandaId);
+                        console.log("comanda rechazada");
                         this.comandaspendent = this.comandasrecepcio.comandes.filter(
                             (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
-                        );
-
-                        console.log("comanda rechazada");
+                        );  
                     })
                     .catch((error) => {
                         console.error("Error al rechazar la comanda:", error);

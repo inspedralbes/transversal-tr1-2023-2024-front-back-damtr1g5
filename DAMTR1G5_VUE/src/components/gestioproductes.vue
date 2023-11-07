@@ -17,8 +17,10 @@
                     <v-col v-for="producte in filteredProducts" :key="producte.id" cols="3">
                         <v-card>
                             <v-img :src="getImageSource(producte)" height="300"></v-img>
-                            <v-text>{{ producte.nom }}</v-text><br>
-                            <v-btn @click="verInfo(producte)">Más info</v-btn>
+                            
+                            <v-card-title>{{ producte.nom }}</v-card-title>
+                            <v-card-actions><v-btn @click="verInfo(producte)">Más info</v-btn>  </v-card-actions>
+                            
                         </v-card>
                     </v-col>
                 </v-row>
