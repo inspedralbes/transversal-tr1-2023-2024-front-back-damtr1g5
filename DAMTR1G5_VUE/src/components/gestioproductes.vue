@@ -122,7 +122,7 @@ export default {
     methods: {
         getImageSource(producte) {
             if (producte.url_imatge && !producte.url_imatge.startsWith('http')) {
-                return `http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/${producte.url_imatge}`;
+                return `http://localhost:3968/imatges_productes/${producte.url_imatge}`;
             }
             return producte.url_imatge;
         },
