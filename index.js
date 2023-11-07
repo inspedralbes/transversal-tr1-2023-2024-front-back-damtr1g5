@@ -144,9 +144,10 @@ app.post('/login', async (req, res) => {
       sess.data.nick = usuari.nick;
       sess.data.usuariID = usuari.id;
       sess.data.comanda_oberta = usuari.comanda_oberta;
-      console.log(req.session.usuariID);
+      
       //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
-      res.json({ "mensaje": "Inicio de sesión exitoso" });
+      res.json({"mensaje": "Inicio de sesión exitoso"});
+      console.log(sess.data.usuariID);
       //console.log(nomUsuari);
       //console.log(contrasenya);
     } else {
@@ -158,6 +159,33 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error });
   }
 });
+
+app.get('/dadesUsuari', async (req, res) => {
+  const userId = sess.data.usuariID; // Obtén el ID del usuario de la sesión
+  console.log("la id es" + userId);
+
+  if (userId) {
+    // Consulta la base de datos para obtener los datos del usuario por su ID
+    const sql = 'SELECT nom, cognoms, nick, dades_targeta FROM usuaris WHERE id = ?';
+
+    try {
+      const results = await executeQuery(sql, [userId]);
+      if (results.length === 0) {
+        res.status(404).json({ error: "Usuario no encontrado" });
+      } else {
+        const userData = results[0];
+        res.json(userData);
+        console.log(userData);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener los datos del usuario" });
+    }
+  } else {
+    res.status(401).json({ error: "No has iniciado sesión" });
+  }
+});
+
+
 
 // Ruta per obtenir la informació dels productes
 app.get("/getProductes", async (req, res) => {
