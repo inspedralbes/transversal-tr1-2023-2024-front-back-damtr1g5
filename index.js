@@ -75,8 +75,8 @@ var sess = { //app.use és el intermediari, middleware
   resave: false, //Obsolet
   saveUninitialized: true,
   data: {
-    comanda_oberta: false,
-    usuariID: null,
+    comanda_oberta: true,
+    usuariID: 1,
     nick: null
   }
 }
@@ -146,7 +146,7 @@ app.post('/login', async (req, res) => {
       sess.data.comanda_oberta = usuari.comanda_oberta;
       console.log(req.session.usuariID);
       //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
-      res.json({"mensaje": "Inicio de sesión exitoso"});
+      res.json({ "mensaje": "Inicio de sesión exitoso" });
       //console.log(nomUsuari);
       //console.log(contrasenya);
     } else {
@@ -287,15 +287,22 @@ app.post("/afegirProducteComanda", async (req, res) => {
   console.log(producte);
   console.log(producte.id);
 
-  if (!req.session.comanda_oberta) {
+  console.log(sess.data.comanda_oberta);
+
+  if (!sess.data.comanda_oberta) {
     try {
+      sess.data.comanda_oberta = true;
+      console.log(sess.data.usuariID);
+      //console.log(req.session.comanda_oberta);
+      await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
+
       const nuevaComanda = {
-        id_usuari: req.session.usuariID,
+        id_usuari: sess.data.usuariID,
         entrega: null,
         estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
 
-      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", nuevaComanda);
+      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", [[nuevaComanda.id_usuari, nuevaComanda.entrega, nuevaComanda.estat]]);
       const comandaId = result.insertId;
 
       const comandaProductos = [comandaId, producte.id, producte.quantitat]
@@ -317,7 +324,7 @@ app.post("/afegirProducteComanda", async (req, res) => {
 
   else {
     try {
-      const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda", nuevaComanda);
+      const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda");
 
       const comandaProductos = [result.id_comanda_actual, req.session.usuariID, producte.id]
       await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
@@ -505,7 +512,7 @@ app.post("/pagar", async (req, res) => {
     console.log(sess.data.usuariID);
     //console.log(req.session.comanda_oberta);
     await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
-    
+
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
