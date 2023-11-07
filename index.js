@@ -508,13 +508,12 @@ app.put("/estatComanda", async (req, res) => {
 
 //Pagar
 app.post("/pagar", async (req, res) => {
+  const comanda = req.body;
+  const id = comanda.id;
+  const estat = 'pendent';
+  const entrega = comanda.entrega; // Obtiene la hora de entrega del cuerpo de la solicitud
 
-  //const { comandaId, nuevoEstado } = req.body;
-  comanda = req.body;
-  id = comanda.id;
-  estat = 'pendent';
-
-  if (!comanda || !estat) {
+  if (!comanda || !estat || !entrega) {
     return res.status(400).json({ error: "Falten dades obligatòries" });
   }
 
@@ -526,19 +525,17 @@ app.post("/pagar", async (req, res) => {
       return res.status(404).json({ error: "Comanda no trobada" });
     }
 
-    // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
-    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, id]);
+    // Actualiza el estado y la hora de entrega de la comanda en la base de datos
+    await executeQuery("UPDATE comanda SET estat = ?, entrega = ? WHERE id = ?", [estat, entrega, id]);
 
     sess.data.comanda_oberta = false;
     console.log(sess.data.usuariID);
-    //console.log(req.session.comanda_oberta);
+    console.log(comanda);
     await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
-    
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
-
-})
+});
