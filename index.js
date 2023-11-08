@@ -3,7 +3,7 @@ var history = require('connect-history-api-fallback');
 const express = require('express');
 var session = require('express-session');
 const cors = require("cors");
-const fs = require('fs');
+const fs = require('fs').promises; // Importa fs.promises para utilizar promesas
 const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
@@ -62,8 +62,8 @@ var sess = { //app.use és el intermediari, middleware
   resave: false, //Obsolet
   saveUninitialized: true,
   data: {
-    comanda_oberta: true,
-    usuariID: 1,
+    comanda_oberta: null,
+    usuariID: null,
     nick: null
   }
 }
@@ -97,6 +97,16 @@ function executeQuery(query, params = []) {
   });
 }
 
+/*async function encodeFileAsBase64URL(file) {
+  return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('loadend', () => {
+          resolve(reader.result);
+      });
+      reader.readAsDataURL(file);
+  });
+};*/
+
 app.get('/', (req, res) => {
   res.sendFile(new URL('./dist/index.html').pathname);
 });
@@ -112,7 +122,9 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
 
+      sess.data.nick = usuari.nick;
       sess.data.usuariID = usuari.id;
+      sess.data.comanda_oberta = usuari.comanda_oberta;
 
       res.json({"mensaje": "Inicio de sesión exitoso"});
       console.log(sess.data.usuariID);
@@ -164,11 +176,36 @@ app.get("/getProductesVUE", async (req, res) => {
   }
 });
 
+/*function base64_encode(file) {
+  console.log(file)
+  // read binary data
+  var bitmap = fs.readFileSync(file);
+  // convert binary data to base64 encoded string
+  return new Buffer(bitmap).toString('base64');
+}//funcio auxilar per codificar fotos*/
+
 // Ruta per obtenir la informació dels productes
 app.get("/getProductesAndroid", async (req, res) => {
   try {
-    const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
+    //const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
+    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
+    console.log(result);
+    for (producte of result) {
+      const imagePath = 'imatges_productes/' + producte.url_imatge;
+      const imageBuffer = await fs.readFile(imagePath); // Lee la imagen en forma de búfer
+      //const imageBuffer = base64_encode(imagePath);
+      //const imageBuffer = await fs.promises.readFile(imagePath); // Lee la imagen en forma de búfer
+
+      // Convierte el búfer en Base64
+      producte.url_imatge = imageBuffer.toString('base64');
+      console.log(producte.url_imatge);
+    }
+
+    // Usar Promise.all para cargar y codificar todas las imágenes en paralelo
+    //await Promise.all(result.map(loadImageAndEncode));
+
+    //console.log(result);
     res.json({ result });
   } catch (error) {
     res.status(500).json({ error });
