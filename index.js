@@ -38,12 +38,6 @@ app.use(staticFileMiddleware)
 var conexion = null; //Se usa en el método de getEstadístiques
 
 const io = new Server(server);
-/*const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  }
-});*/
 
 io.on('connection', (socket) => {
   socket.on('canviEstat', (msg) => {
@@ -52,10 +46,6 @@ io.on('connection', (socket) => {
     io.emit('canviEstat', msg);
   });
 });
-
-/*app.listen(PORT, function () {
-  console.log("SERVER RUNNNIG AT PORT " + PORT);
-});*/
 
 server.listen(PORT, () => {
   console.log('Server running at http://localhost:' + PORT);
@@ -87,23 +77,6 @@ var sess = { //app.use és el intermediari, middleware
 app.use(session(sess));
 
 app.use(express.json());
-
-//Utilizem el mòdul "cors" per poder realitzar les operacions 
-/*app.use(cors({
-  origin: function (origin, callback) {
-    return callback(null, true);
-  }
-}));*/
-
-//app.use(cors());
-
-/*app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-})*/
 
 // Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
@@ -144,14 +117,11 @@ app.post('/login', async (req, res) => {
     const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
 
     if (usuari) {
-      // Almacena el ID de usuario en la sesión
-      
+
       sess.data.usuariID = usuari.id;
 
       res.json({"mensaje": "Inicio de sesión exitoso"});
       console.log(sess.data.usuariID);
-      //console.log(nomUsuari);
-      //console.log(contrasenya);
     } else {
       console.log(nomUsuari);
       console.log(contrasenya);
@@ -339,9 +309,6 @@ app.post("/afegirProducteComanda", async (req, res) => {
 
       await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES (?)", [comandaProductos]);
 
-      // Emitre la nova comanda al client en temps real
-      //io.emit("novaComanda", nuevaComanda);
-
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
       req.session.comanda_oberta = true;
@@ -383,9 +350,6 @@ app.post("/afegirProducteComanda", async (req, res) => {
           await executeQuery("UPDATE comanda_productes SET quantitat = ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
         }
       }
-
-      // Emitre la nova comanda al client en temps real
-      //io.emit("novaComanda", nuevaComanda);
 
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
@@ -480,8 +444,6 @@ app.get("/getEstadistiques", (req, res) => {
     }
   });
 });
-
-
 
 // Ruta per obtenir la llista de comandes
 app.get("/getComandes", async (req, res) => {
