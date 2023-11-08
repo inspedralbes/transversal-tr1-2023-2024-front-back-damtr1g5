@@ -1,6 +1,6 @@
 export async function getProductes() {
     console.log("Fetching productes...")
-    const response = await fetch('http://localhost:3968/getProductes')
+    const response = await fetch('http://localhost:3968/getProductesVUE')
     const productes = await response.json()
     console.log(productes)
     return productes
