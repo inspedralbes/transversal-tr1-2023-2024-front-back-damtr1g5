@@ -28,8 +28,8 @@
                     <v-card>
                         <v-card-title>Informació de la comanda: </v-card-title>
                         <v-card-text>
-                            <h4>Data creació: </h4>
-                            <v-text>{{ formatDateTime(selected_comanda.entrega) || 'No especificada' }}</v-text>
+                            <h4>Data Creació: </h4>
+                            <v-text>{{ formatDateTime(selected_comanda.datacomanda) || 'No especificada' }}</v-text>
                             <h4>Productes:</h4>
                             <ul>
                                 <li v-for="producte in selected_comanda.productes" :key="producte.id"
@@ -99,9 +99,9 @@
                         <v-card-title>Informació de la comanda: </v-card-title>
                         <v-card-text>
                             <h1>En preparació</h1>
-                            <h4>Data creació: </h4>
+                            <h4>Entrega: </h4>
                             <v-text>{{ formatDateTime(selected_comanda.entrega) || 'No especificada' }}</v-text>
-                            <h4>Entrega</h4>
+                            <h4>Data creacio: </h4>
                             <v-text>{{ formatDateTime(selected_comanda.datacomanda) }}</v-text>
                             <h4>Productes:</h4>
                             <ul>
