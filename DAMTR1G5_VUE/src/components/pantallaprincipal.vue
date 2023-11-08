@@ -27,8 +27,8 @@
 export default {
     data() {
         return {
-            imatgeProductes: 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/imatge_productes.jpg',
-            imatgeComandes: 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/imatge_comandes.jpg'
+            imatgeProductes: 'http://localhost:3968/imatges_productes/imatge_productes.jpg',
+            imatgeComandes: 'http://localhost:3968/imatges_productes/imatge_comandes.jpg'
         }
     },
     methods: {
