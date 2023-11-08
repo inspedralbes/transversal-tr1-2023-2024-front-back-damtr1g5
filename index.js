@@ -374,7 +374,12 @@ app.post("/afegirProducteComanda", async (req, res) => {
         console.log(comandaProductos[0]);
         console.log(comandaProductos[1]);
         console.log(comandaProductos[2]);
-        await executeQuery("UPDATE comanda_productes SET quantitat = quantitat + ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
+        if (!producte.editarQuantitat) {
+          await executeQuery("UPDATE comanda_productes SET quantitat = quantitat + ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
+        }
+        else {
+          await executeQuery("UPDATE comanda_productes SET quantitat = ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
+        }
       }
 
       // Emitre la nova comanda al client en temps real
