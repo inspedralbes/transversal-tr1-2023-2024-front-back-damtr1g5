@@ -25,14 +25,25 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+import history from 'connect-history-api-fallback'
+const staticFileMiddleware = express.static("../dist")
+app.use(staticFileMiddleware)
+app.use(history({
+  disableDotRule: true,
+  verbose: true
+}))
+
+app.use(staticFileMiddleware)
+
 var conexion = null; //Se usa en el método de getEstadístiques
 
-const io = new Server(server, {
+const io = new Server(server);
+/*const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
   }
-});
+});*/
 
 io.on('connection', (socket) => {
   socket.on('canviEstat', (msg) => {
@@ -51,16 +62,8 @@ server.listen(PORT, () => {
 });
 
 app.use('/imatges_productes', express.static('imatges_productes'));
-
-app.use('/imatges_stats', express.static('imatges_stats'))
-
-
-
-
-
-app.use('/imatges_productes', express.static('imatges_productes'));
-
 app.use('/imatges_stats', express.static('imatges_stats'));
+app.use('../dist')
 
 //Datos para la conexión en la base de datos, se usa 1 vez para cada ruta
 const dbConfig = {
@@ -92,8 +95,7 @@ app.use(express.json());
   }
 }));*/
 
-app.use(cors());
-
+//app.use(cors());
 
 /*app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -127,6 +129,10 @@ function executeQuery(query, params = []) {
     });
   });
 }
+
+app.get('/', (req, res) => {
+  res.sendFile(new URL('./index.html', import.meta.url).pathname);
+});
 
 //Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
