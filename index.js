@@ -486,7 +486,7 @@ app.get("/getComandes", async (req, res) => {
   try {
     // Consulta la base de dades per obtenir les comandes
     const comandes = await executeQuery("SELECT * FROM comanda");
-
+    console.log(comandes.length);
     // Per a cada comanda, consulta els productes associats
     for (const comanda of comandes) {
       comanda.productes = await executeQuery(
