@@ -139,13 +139,9 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      //req.session.nick = usuari.nick; // Almacena el nick del usuario
-      //req.session.usuariID = usuari.id; // Almacena el ID del usuario
-      sess.data.nick = usuari.nick;
-      sess.data.usuariID = usuari.id;
-      sess.data.comanda_oberta = usuari.comanda_oberta;
       
-      //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      sess.data.usuariID = usuari.id;
+
       res.json({"mensaje": "Inicio de sesión exitoso"});
       console.log(sess.data.usuariID);
       //console.log(nomUsuari);
