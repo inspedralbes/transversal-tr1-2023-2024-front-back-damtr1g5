@@ -3,7 +3,7 @@ var history = require('connect-history-api-fallback');
 const express = require('express');
 var session = require('express-session');
 const cors = require("cors");
-const fs = require('fs');
+const fs = require('fs').promises;
 const app = express();
 const { createServer } = require('http');
 const { Server } = require('socket.io');
@@ -72,7 +72,7 @@ var sess = { //app.use és el intermediari, middleware
   resave: false, //Obsolet
   saveUninitialized: true,
   data: {
-    comanda_oberta: false,
+    comanda_oberta: null,
     usuariID: null,
     nick: null
   }
@@ -140,7 +140,9 @@ app.post('/login', async (req, res) => {
     if (usuari) {
       // Almacena el ID de usuario en la sesión
       
+      sess.data.nick = usuari.nick;
       sess.data.usuariID = usuari.id;
+      sess.data.comanda_oberta = usuari.comanda_oberta;
 
       res.json({"mensaje": "Inicio de sesión exitoso"});
       console.log(sess.data.usuariID);
@@ -188,6 +190,34 @@ app.get("/getProductesVUE", async (req, res) => {
   try {
     const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
+    res.json({ result });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+// Ruta per obtenir la informació dels productes
+app.get("/getProductesAndroid", async (req, res) => {
+  try {
+    //const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
+    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
+    console.log("Productes obtinguts amb èxit");
+    console.log(result);
+    for (producte of result) {
+      const imagePath = 'imatges_productes/' + producte.url_imatge;
+      const imageBuffer = await fs.readFile(imagePath); // Lee la imagen en forma de búfer
+      //const imageBuffer = base64_encode(imagePath);
+      //const imageBuffer = await fs.promises.readFile(imagePath); // Lee la imagen en forma de búfer
+
+      // Convierte el búfer en Base64
+      producte.url_imatge = imageBuffer.toString('base64');
+      console.log(producte.url_imatge);
+    }
+
+    // Usar Promise.all para cargar y codificar todas las imágenes en paralelo
+    //await Promise.all(result.map(loadImageAndEncode));
+
+    //console.log(result);
     res.json({ result });
   } catch (error) {
     res.status(500).json({ error });
@@ -311,23 +341,27 @@ app.post("/afegirProducteComanda", async (req, res) => {
   console.log(producte);
   console.log(producte.id);
 
-  if (!req.session.comanda_oberta) {
+  console.log(sess.data.comanda_oberta);
+
+  if (!sess.data.comanda_oberta) {
     try {
+      sess.data.comanda_oberta = true;
+      console.log(sess.data.usuariID);
+      //console.log(req.session.comanda_oberta);
+      await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
+
       const nuevaComanda = {
-        id_usuari: req.session.usuariID,
+        id_usuari: sess.data.usuariID,
         entrega: null,
         estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
 
-      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", nuevaComanda);
+      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", [[nuevaComanda.id_usuari, nuevaComanda.entrega, nuevaComanda.estat]]);
       const comandaId = result.insertId;
 
       const comandaProductos = [comandaId, producte.id, producte.quantitat]
 
       await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES (?)", [comandaProductos]);
-
-      // Emitre la nova comanda al client en temps real
-      //io.emit("novaComanda", nuevaComanda);
 
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
@@ -341,13 +375,35 @@ app.post("/afegirProducteComanda", async (req, res) => {
 
   else {
     try {
-      const result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda", nuevaComanda);
+      var result = await executeQuery("SELECT max(id) AS id_comanda_actual FROM comanda");
 
-      const comandaProductos = [result.id_comanda_actual, req.session.usuariID, producte.id]
-      await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES ?", [comandaProductos]);
+      //console.log(result);
+      id_comanda = result[0].id_comanda_actual;
+      result = await executeQuery("SELECT * FROM comanda_productes WHERE comanda_id = ?", id_comanda);
+      console.log(result);
+      let producte_repetit = false;
+      for (const producte_llista of result) {
+        if (producte_llista.producte_id === producte.id) {
+          producte_repetit = true;
+        }
+      }
 
-      // Emitre la nova comanda al client en temps real
-      io.emit("novaComanda", nuevaComanda);
+      if (!producte_repetit) {
+        const comandaProductos = [result[0].comanda_id, producte.id, producte.quantitat];
+        await executeQuery("INSERT INTO comanda_productes (comanda_id, producte_id, quantitat) VALUES (?)", [comandaProductos]);
+      }
+      else {
+        const comandaProductos = [result[0].comanda_id, producte.id, producte.quantitat]
+        console.log(comandaProductos[0]);
+        console.log(comandaProductos[1]);
+        console.log(comandaProductos[2]);
+        if (!producte.editarQuantitat) {
+          await executeQuery("UPDATE comanda_productes SET quantitat = quantitat + ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
+        }
+        else {
+          await executeQuery("UPDATE comanda_productes SET quantitat = ? WHERE comanda_id = ? AND producte_id = ?", [comandaProductos[2], comandaProductos[0], comandaProductos[1]]);
+        }
+      }
 
       console.log("Comanda acceptada, ens posem en marxa");
       res.json({ message: "Comanda acceptada, ens posem en marxa" });
