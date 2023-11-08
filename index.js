@@ -1,4 +1,5 @@
 //Definim totes les constants que necessita el servidor per operar
+var history = require('connect-history-api-fallback');
 const express = require('express');
 var session = require('express-session');
 const cors = require("cors");
@@ -25,15 +26,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-import history from 'connect-history-api-fallback'
-const staticFileMiddleware = express.static("../dist")
-app.use(staticFileMiddleware)
-app.use(history({
-  disableDotRule: true,
-  verbose: true
-}))
 
-app.use(staticFileMiddleware)
+
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
@@ -48,12 +42,12 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Server running at http://localhost:' + PORT);
+  console.log('Server running');
 });
 
 app.use('/imatges_productes', express.static('imatges_productes'));
 app.use('/imatges_stats', express.static('imatges_stats'));
-app.use('../dist')
+app.use(express.static('./dist'))
 
 //Datos para la conexión en la base de datos, se usa 1 vez para cada ruta
 const dbConfig = {
@@ -104,7 +98,7 @@ function executeQuery(query, params = []) {
 }
 
 app.get('/', (req, res) => {
-  res.sendFile(new URL('./index.html', import.meta.url).pathname);
+  res.sendFile(new URL('./dist/index.html').pathname);
 });
 
 //Login per comprovar que un usuari existeix a la base de dades
@@ -535,3 +529,12 @@ app.post("/pagar", async (req, res) => {
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
 });
+
+const staticFileMiddleware = express.static("./dist")
+app.use(staticFileMiddleware)
+app.use(history({
+  disableDotRule: true,
+  verbose: true
+}))
+
+app.use(staticFileMiddleware)
