@@ -154,9 +154,20 @@ app.get('/dadesUsuari', async (req, res) => {
 
 
 // Ruta per obtenir la informació dels productes
-app.get("/getProductes", async (req, res) => {
+app.get("/getProductesVUE", async (req, res) => {
   try {
-    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
+    const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
+    console.log("Productes obtinguts amb èxit");
+    res.json({ result });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+// Ruta per obtenir la informació dels productes
+app.get("/getProductesAndroid", async (req, res) => {
+  try {
+    const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
     console.log("Productes obtinguts amb èxit");
     res.json({ result });
   } catch (error) {
