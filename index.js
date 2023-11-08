@@ -25,14 +25,25 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+import history from 'connect-history-api-fallback'
+const staticFileMiddleware = express.static("../dist")
+app.use(staticFileMiddleware)
+app.use(history({
+  disableDotRule: true,
+  verbose: true
+}))
+
+app.use(staticFileMiddleware)
+
 var conexion = null; //Se usa en el método de getEstadístiques
 
-const io = new Server(server, {
+const io = new Server(server);
+/*const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
   }
-});
+});*/
 
 io.on('connection', (socket) => {
   socket.on('canviEstat', (msg) => {
@@ -51,16 +62,8 @@ server.listen(PORT, () => {
 });
 
 app.use('/imatges_productes', express.static('imatges_productes'));
-
-app.use('/imatges_stats', express.static('imatges_stats'))
-
-
-
-
-
-app.use('/imatges_productes', express.static('imatges_productes'));
-
 app.use('/imatges_stats', express.static('imatges_stats'));
+app.use('../dist')
 
 //Datos para la conexión en la base de datos, se usa 1 vez para cada ruta
 const dbConfig = {
@@ -92,8 +95,7 @@ app.use(express.json());
   }
 }));*/
 
-app.use(cors());
-
+//app.use(cors());
 
 /*app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -128,6 +130,10 @@ function executeQuery(query, params = []) {
   });
 }
 
+app.get('/', (req, res) => {
+  res.sendFile(new URL('./index.html', import.meta.url).pathname);
+});
+
 //Login per comprovar que un usuari existeix a la base de dades
 app.post('/login', async (req, res) => {
   try {
@@ -139,13 +145,9 @@ app.post('/login', async (req, res) => {
 
     if (usuari) {
       // Almacena el ID de usuario en la sesión
-      //req.session.nick = usuari.nick; // Almacena el nick del usuario
-      //req.session.usuariID = usuari.id; // Almacena el ID del usuario
-      sess.data.nick = usuari.nick;
-      sess.data.usuariID = usuari.id;
-      sess.data.comanda_oberta = usuari.comanda_oberta;
       
-      //req.session.comanda_oberta = usuari.comanda_oberta; // Almacena el estado de comanda
+      sess.data.usuariID = usuari.id;
+
       res.json({"mensaje": "Inicio de sesión exitoso"});
       console.log(sess.data.usuariID);
       //console.log(nomUsuari);
@@ -540,13 +542,12 @@ app.put("/estatComanda", async (req, res) => {
 
 //Pagar
 app.post("/pagar", async (req, res) => {
+  const comanda = req.body;
+  const id = comanda.id;
+  const estat = 'pendent';
+  const entrega = comanda.entrega; // Obtiene la hora de entrega del cuerpo de la solicitud
 
-  //const { comandaId, nuevoEstado } = req.body;
-  comanda = req.body;
-  id = comanda.id;
-  estat = 'pendent';
-
-  if (!comanda || !estat) {
+  if (!comanda || !estat || !entrega) {
     return res.status(400).json({ error: "Falten dades obligatòries" });
   }
 
@@ -558,19 +559,17 @@ app.post("/pagar", async (req, res) => {
       return res.status(404).json({ error: "Comanda no trobada" });
     }
 
-    // Actualiza el estado de la comanda al nuevo estado proporcionado en el cuerpo
-    await executeQuery("UPDATE comanda SET estat = ? WHERE id = ?", [estat, id]);
+    // Actualiza el estado y la hora de entrega de la comanda en la base de datos
+    await executeQuery("UPDATE comanda SET estat = ?, entrega = ? WHERE id = ?", [estat, entrega, id]);
 
     sess.data.comanda_oberta = false;
     console.log(sess.data.usuariID);
-    //console.log(req.session.comanda_oberta);
+    console.log(comanda);
     await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
-
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error en aprovar la comanda" });
   }
-
-})
+});
