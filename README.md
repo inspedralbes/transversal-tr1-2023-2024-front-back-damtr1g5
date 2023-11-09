@@ -10,7 +10,6 @@ Objectiu
 Fer una aplicació simulant un restaurant amb "TAKE AWAY", la part de l'usuari per mòbil i la part de gestió per la web amb Vuetify
 ESTAT: Completat
 
-Adreça web amb la documentació: FALTAAA
 Adreça web: takeawayg5.dam.inspedralbes.cat:3968
 
 Enllaç a l'eina de prototipatge Figma:
