@@ -204,8 +204,8 @@ app.get("/getProductesVUE", async (req, res) => {
 // Ruta per obtenir la informació dels productes
 app.get("/getProductesAndroid", async (req, res) => {
   try {
-    //const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
-    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
+    const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
+    //const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
     console.log(result);
     for (producte of result) {
@@ -518,10 +518,37 @@ app.get("/getEstadistiques", (req, res) => {
 
 
 // Ruta per obtenir la llista de comandes
-app.get("/getComandes", async (req, res) => {
+app.get("/getComandesVUE", async (req, res) => {
   try {
     // Consulta la base de dades per obtenir les comandes
     const comandes = await executeQuery("SELECT * FROM comanda");
+
+    // Per a cada comanda, consulta els productes associats
+    for (const comanda of comandes) {
+      comanda.productes = await executeQuery(
+        "SELECT cp.quantitat, p.* FROM productes p " +
+        "INNER JOIN comanda_productes cp ON p.id = cp.producte_id " +
+        "WHERE cp.comanda_id = ?",
+        [comanda.id]
+      );
+    }
+
+    // Emitre les comandes al client en temps real
+    io.emit("novaComanda", { comandes });
+
+    console.log("Comandes enviades al client amb èxit");
+    res.json({ comandes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Alguna cosa ha fallat en obtenir les comandes" });
+  }
+});
+
+// Ruta per obtenir la llista de comandes
+app.get("/getComandesAndroid", async (req, res) => {
+  try {
+    // Consulta la base de dades per obtenir les comandes
+    const comandes = await executeQuery("SELECT * FROM comanda WHERE id_usuari = ?", sess.data.usuariID);
 
     // Per a cada comanda, consulta els productes associats
     for (const comanda of comandes) {
