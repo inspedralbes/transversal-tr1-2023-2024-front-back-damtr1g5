@@ -40,10 +40,15 @@ const io = new Server(server);
 });*/
 
 io.on('connection', (socket) => {
-  socket.on('canviEstat', (msg) => {
+  socket.on('comandaAprovada', (msg) => {
     console.log("rebut");
     console.log(msg);
-    io.emit('canviEstat', msg);
+    io.emit('comandaAprovada', msg);
+  });
+  socket.on('comandaRebutjada', (msg) => {
+    console.log("rebut");
+    console.log(msg);
+    io.emit('comandaRebutjada', msg);
   });
 });
 
@@ -275,6 +280,7 @@ app.delete("/eliminarProducto", async (req, res) => {
 
 // Ruta per actualitzar un producte de la base de dades
 app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) => {
+  console.log(req.body);
   const productoId = req.body.id;
   const nuevaCategoria = req.body.categoria;
   const nuevoNombre = req.body.nom;
@@ -288,10 +294,20 @@ app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) =>
   }
 
   try {
-    const result = await executeQuery(
-      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
-      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
-    );
+
+    if (nuevoEstado != null) {
+      const result = await executeQuery(
+        "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
+        [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
+      );
+    }
+    else {
+      const result = await executeQuery(
+        "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
+        [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
+      );
+    }
+    
     console.log("Actualització exitosa");
     res.json({ message: "Actualització exitosa" });
   } catch (error) {

@@ -220,7 +220,7 @@ export default {
                 this.comandesrecepcio = response;
 
                 // Filtra las comandas una vez que se han cargado
-                this.comandaspendent = this.comandesrecepcio.comandes.filter(comanda => comanda.estat === 'pendent' || comanda.estat === 'oberta');
+                this.comandaspendent = this.comandesrecepcio.comandes.filter(comanda => comanda.estat === 'pendent');
 
                 this.verComandes = true;
                 this.verPreparacio = false;
@@ -315,7 +315,7 @@ export default {
                     })
                     .then((response) => {
                         this.comandasrecepcio = response;
-                        socket.emit('canviEstat', nuevoEstado + comandaId);
+                        socket.emit('comandaAprovada', comandaId);
                         console.log("enviat");
                         this.comandaspendent = this.comandasrecepcio.comandes.filter(
                             (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
@@ -338,7 +338,7 @@ export default {
                     .then(() => getComandes())
                     .then((response) => {
                         this.comandasrecepcio = response;
-                        socket.emit('canviEstat', nuevoEstado + comandaId);
+                        socket.emit('comandaRebutjada', comandaId);
                         console.log("comanda rechazada");
                         this.comandaspendent = this.comandasrecepcio.comandes.filter(
                             (comanda) => comanda.estat === 'pendent' || comanda.estat === 'oberta'
