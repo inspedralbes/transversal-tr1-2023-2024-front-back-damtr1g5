@@ -2,12 +2,12 @@
     <title>Gestió de productes</title>
 
     <v-layout class="rounded rounded-md" v-if="mostrar_productes">
-        <v-app-bar title="Gestió de productes">
+        <v-app-bar title="Gestió de productes" style="background-color: #800; color: white; ">
 
-            <v-btn @click="irPanell">Panell de control</v-btn>
-            <v-btn @click="irComandes">Comandes</v-btn>
+            <v-btn @click="irPanell">Panell de control <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/panell.png"></v-btn>
+            <v-btn @click="irComandes">Comandes <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/comanda.png"></v-btn>
             <p>|</p>
-            <v-btn @click="verFormulari">Insertar Producte</v-btn>
+            <v-btn @click="verFormulari">Insertar Producte <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/afegir.png"></v-btn>
         </v-app-bar>
         <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
             <v-container class="grid-list-md">
@@ -19,13 +19,13 @@
                             <v-img :src="getImageSource(producte)" height="300"></v-img>
                             
                             <v-card-title>{{ producte.nom }}</v-card-title>
-                            <v-card-actions><v-btn @click="verInfo(producte)">Más info</v-btn>  </v-card-actions>
+                            <v-card-actions><v-btn @click="verInfo(producte)">Más info <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/mes_info.png"></v-btn>  </v-card-actions>
                             
                         </v-card>
                     </v-col>
                 </v-row>
             </v-container>
-            <v-dialog v-model="ver_info" max-width="600">
+            <v-dialog v-model="ver_info" max-width="650">
                 <v-card>
                     <v-card-title>Informació del producte: </v-card-title>
                     <v-card-text>
@@ -35,10 +35,10 @@
                         <h4>Preu:</h4><v-text>{{ selected_productes.preu }}</v-text>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn @click="ver_info = false">Tancar</v-btn>
+                        <v-btn @click="ver_info = false">Tancar <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/tancar.png"></v-btn>
                         <v-btn @click="deleteProductes(selected_productes.id), ver_info = false"
-                            style="color: red;">Esborrar producte</v-btn>
-                        <v-btn @click="verEditar(selected_productes)">Editar Producte</v-btn>
+                            style="color: red;">Esborrar producte <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/esborrar.png"></v-btn>
+                        <v-btn @click="verEditar(selected_productes)">Editar Producte <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/editar.png"></v-btn>
                         <v-btn @click="activardesactivar(selected_productes)"> {{ selected_productes.estado_producte ===
                             'activado' ? 'Desactivar' : 'Activar' }}</v-btn> </v-card-actions>
                 </v-card>
@@ -56,8 +56,8 @@
                             type="file"></v-file-input>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn style="color: green;" @click="addProductes">Afegir Producte</v-btn>
-                        <v-btn style="color: red;" @click="verAfegirProducte = false">Cancelar</v-btn>
+                        <v-btn style="color: green;" @click="addProductes">Afegir Producte <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/aceptar.png"></v-btn>
+                        <v-btn style="color: red;" @click="verAfegirProducte = false">Cancelar <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/tancar.png"></v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -73,8 +73,8 @@
                             type="file"></v-file-input>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn style="color: green;" @click="actualizarProducte(producte_editado)">Editar Producte</v-btn>
-                        <v-btn style="color: red;" @click="vereditarProducte = false">Cancelar</v-btn>
+                        <v-btn style="color: green;" @click="actualizarProducte(producte_editado)">Editar Producte <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/aceptar.png"></v-btn>
+                        <v-btn style="color: red;" @click="vereditarProducte = false">Cancelar <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/tancar.png"></v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>

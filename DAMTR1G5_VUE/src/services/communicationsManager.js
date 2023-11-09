@@ -54,7 +54,7 @@ export async function updateProducte(dadesEdicio) {
 
 export async function getComandes() {
     console.log("Fetching comandes...")
-    const response = await fetch('http://takeawayg5.dam.inspedralbes.cat:3968/getComandes')
+    const response = await fetch('http://takeawayg5.dam.inspedralbes.cat:3968/getComandesVUE')
     const comandes = await response.json()
     console.log(comandes)
     return comandes

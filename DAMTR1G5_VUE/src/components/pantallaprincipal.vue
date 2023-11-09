@@ -2,25 +2,26 @@
     <title>Panell de control</title>
     <div class="panell_principal" >
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="Panell de control"></v-app-bar>
+            <v-app-bar title="Panell de control" style="background-color: #800; color: white; "></v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
-                <v-card text="Gestió Productes">
+                <v-card >
+                    <v-card-title>Gestió Productes</v-card-title>
                     <img :src="imatgeProductes" style="height: 250px; width: 250px;">
                     <v-card-actions>
-                        <v-btn @click="irProductes">Productes</v-btn>
+                        <v-btn @click="irProductes">Productes <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/productes.png"></v-btn>
                     </v-card-actions>
                 </v-card>
-                <v-card text="Gestió Comandes">
+                <v-card>
+                    <v-card-title>Gestió Comandes</v-card-title>
                     <img :src="imatgeComandes" style="height: 250px; width: 250px;">
                     <v-card-actions>
-                        <v-btn @click="irComandes">Comandes</v-btn>
+                        <v-btn @click="irComandes">Comandes <img src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/comanda.png"></v-btn>
                     </v-card-actions>
                 </v-card>
             </v-main>
         </v-layout>
     </div>
 
-    
 </template>
   
 <script>

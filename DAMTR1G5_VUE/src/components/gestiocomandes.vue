@@ -3,7 +3,7 @@
 
     <div class="panell_recepcio" v-if="verComandes">
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="Recepció de comandes">
+            <v-app-bar title="Recepció de comandes" style="background-color: #800; color: white; ">
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
@@ -34,7 +34,7 @@
                             <ul>
                                 <li v-for="producte in selected_comanda.productes" :key="producte.id"
                                     style="margin-left: 25px;">
-                                    {{ producte.nom }} - {{ producte.preu }}€
+                                    X{{producte.quantitat}} - {{ producte.nom }} - {{ producte.preu }}€
                                 </li>
                             </ul>
                             <h4>Preu Total:</h4>
@@ -53,7 +53,7 @@
 
     <div class="panell_estadistiques" v-if="verStats">
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="Estadistiques">
+            <v-app-bar title="Estadistiques" style="background-color: #800; color: white; ">
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
@@ -62,7 +62,8 @@
                 <v-btn @click="veureResum">Resúm</v-btn>
             </v-app-bar>
             <v-main class="d-flex align-center justify-center" style="min-height: 300px">
-                <div v-if="imatgeGrafic1 && imatgeGrafic2 && imatgeGrafic3">
+                <img v-if="isLoading" src="http://takeawayg5.dam.inspedralbes.cat:3968/imatges_productes/gif_carrega.gif">
+                <div v-else-if="imatgeGrafic1 && imatgeGrafic2 && imatgeGrafic3">
                     <img :src="imatgeGrafic1" alt="Estadísticas comandes per producto" />
                     <img :src="imatgeGrafic2" alt="Estadísticas comandes per horas" />
                     <img :src="imatgeGrafic3" alt="Estadísticas recaudación per horas" />
@@ -73,7 +74,7 @@
     </div>
     <div class="panell_enpreparacio" v-if="verPreparacio">
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="En Preparació">
+            <v-app-bar title="En Preparació" style="background-color: #800; color: white; ">
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
@@ -107,7 +108,7 @@
                             <ul>
                                 <li v-for="producte in selected_comanda.productes" :key="producte.id"
                                     style="margin-left: 25px;">
-                                    {{ producte.nom }} - {{ producte.preu }}€
+                                    X{{producte.quantitat}} - {{ producte.nom }} - {{ producte.preu }}€
                                 </li>
                             </ul>
                             <h4>Preu Total:</h4>
@@ -123,7 +124,7 @@
     </div>
     <div class="panell_resum" v-if="verResum">
         <v-layout class="rounded rounded-md">
-            <v-app-bar title="Resúm de comandes">
+            <v-app-bar title="Resúm de comandes" style="background-color: #800; color: white; ">
                 <v-btn @click="irPanell">Panell de control</v-btn>
                 <v-btn @click="irProductes">Productes</v-btn>
                 <p>|</p>
@@ -158,7 +159,7 @@
                             <ul>
                                 <li v-for="producte in selected_comanda.productes" :key="producte.id"
                                     style="margin-left: 25px;">
-                                    {{ producte.nom }} - {{ producte.preu }}€
+                                    X{{producte.quantitat}} - {{ producte.nom }} - {{ producte.preu }}€
                                 </li>
                             </ul>
                             <h4>Preu Total:</h4>
@@ -197,6 +198,7 @@ export default {
             searchQuery: "",
             searchQueryPreparacio: "",
             searchQueryResum: "",
+            isLoading: false,
 
         }
     },
@@ -246,15 +248,17 @@ export default {
             this.verPreparacio = false;
             this.verResum = false;
             this.verStats = true;
+            this.isLoading = true;
 
-            try {
-                getEstadistiques();
-                this.imatgeGrafic1 = 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_stats/comandes_per_producte.png';
-                this.imatgeGrafic2 = 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_stats/comandes_por_horas.png';
-                this.imatgeGrafic3 = 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_stats/recaudacio_per_hores.png';
-            } catch (error) {
-                console.error('Error al obtener estadísticas:', error);
-            }
+                try {
+                    getEstadistiques();
+                    this.imatgeGrafic1 = 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_stats/comandes_per_producte.png';
+                    this.imatgeGrafic2 = 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_stats/comandes_por_horas.png';
+                    this.imatgeGrafic3 = 'http://takeawayg5.dam.inspedralbes.cat:3968/imatges_stats/recaudacio_per_hores.png';
+                } catch (error) {
+                    console.error('Error al obtener estadísticas:', error);
+                }
+                this.isLoading = false;
         },
 
         veurePreparacio() {
@@ -296,7 +300,7 @@ export default {
                 let total = 0;
 
                 for (const producte of this.selected_comanda.productes) {
-                    total += parseFloat(producte.preu);
+                    total += parseFloat(producte.preu)*producte.quantitat;
                 }
 
                 return total.toFixed(2);
@@ -395,4 +399,3 @@ export default {
 
 }
 </script>
-
