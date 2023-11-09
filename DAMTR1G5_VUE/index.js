@@ -31,19 +31,24 @@ const upload = multer({ storage: storage });
 
 var conexion = null; //Se usa en el método de getEstadístiques
 
-//const io = new Server(server);
-const io = new Server(server, {
+const io = new Server(server);
+/*const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
   }
-});
+});*/
 
 io.on('connection', (socket) => {
-  socket.on('canviEstat', (msg) => {
+  socket.on('comandaAprovada', (msg) => {
     console.log("rebut");
     console.log(msg);
-    io.emit('canviEstat', msg);
+    io.emit('comandaAprovada', msg);
+  });
+  socket.on('comandaRebutjada', (msg) => {
+    console.log("rebut");
+    console.log(msg);
+    io.emit('comandaRebutjada', msg);
   });
 });
 
@@ -72,7 +77,7 @@ var sess = { //app.use és el intermediari, middleware
   resave: false, //Obsolet
   saveUninitialized: true,
   data: {
-    comanda_oberta: false,
+    comanda_oberta: null,
     usuariID: null,
     nick: null
   }
@@ -89,15 +94,15 @@ app.use(express.json());
   }
 }));*/
 
-app.use(cors());
+//app.use(cors());
 
-app.use((req, res, next) => {
+/*app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
-})
+})*/
 
 // Funció que executa una consulta SQL a la base de dades i manipula la conexió. ES FA AMB UNA PROMISE
 function executeQuery(query, params = []) {
@@ -124,16 +129,6 @@ function executeQuery(query, params = []) {
   });
 }
 
-/*async function encodeFileAsBase64URL(file) {
-  return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.addEventListener('loadend', () => {
-          resolve(reader.result);
-      });
-      reader.readAsDataURL(file);
-  });
-};*/
-
 app.get('/', (req, res) => {
   res.sendFile(new URL('./dist/index.html').pathname);
 });
@@ -148,13 +143,17 @@ app.post('/login', async (req, res) => {
     const usuari = result.find(user => user.nick === nomUsuari && user.contrasenya === contrasenya);
 
     if (usuari) {
+      // Almacena el ID de usuario en la sesión
 
-      sess.data.nick = usuari.nick;
-      sess.data.usuariID = usuari.id;
-      sess.data.comanda_oberta = usuari.comanda_oberta;
+      req.session.nick = usuari.nick;
+      req.session.usuariID = usuari.id;
+      console.log(req.session.usuariID);
+      req.session.comanda_oberta = usuari.comanda_oberta;
 
-      res.json({"mensaje": "Inicio de sesión exitoso"});
-      console.log(sess.data.usuariID);
+      res.json({ "mensaje": "Inicio de sesión exitoso" });
+      console.log(req.session.usuariID);
+      //console.log(nomUsuari);
+      //console.log(contrasenya);
     } else {
       console.log(nomUsuari);
       console.log(contrasenya);
@@ -166,7 +165,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/dadesUsuari', async (req, res) => {
-  const userId = sess.data.usuariID; // Obtén el ID del usuario de la sesión
+  const userId = req.session.usuariID; // Obtén el ID del usuario de la sesión
   console.log("la id es" + userId);
 
   if (userId) {
@@ -195,7 +194,7 @@ app.get('/dadesUsuari', async (req, res) => {
 // Ruta per obtenir la informació dels productes
 app.get("/getProductesVUE", async (req, res) => {
   try {
-    const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
+    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
     res.json({ result });
   } catch (error) {
@@ -203,21 +202,13 @@ app.get("/getProductesVUE", async (req, res) => {
   }
 });
 
-/*function base64_encode(file) {
-  console.log(file)
-  // read binary data
-  var bitmap = fs.readFileSync(file);
-  // convert binary data to base64 encoded string
-  return new Buffer(bitmap).toString('base64');
-}//funcio auxilar per codificar fotos*/
-
 // Ruta per obtenir la informació dels productes
 app.get("/getProductesAndroid", async (req, res) => {
   try {
     //const result = await executeQuery("SELECT * FROM productes WHERE estado_producte = ? ORDER BY categoria", "activado");
     const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
-    console.log(result);
+    //console.log(result);
     for (producte of result) {
       const imagePath = 'imatges_productes/' + producte.url_imatge;
       const imageBuffer = await fs.readFile(imagePath); // Lee la imagen en forma de búfer
@@ -226,7 +217,7 @@ app.get("/getProductesAndroid", async (req, res) => {
 
       // Convierte el búfer en Base64
       producte.url_imatge = imageBuffer.toString('base64');
-      console.log(producte.url_imatge);
+      //console.log(producte.url_imatge);
     }
 
     // Usar Promise.all para cargar y codificar todas las imágenes en paralelo
@@ -290,6 +281,7 @@ app.delete("/eliminarProducto", async (req, res) => {
 
 // Ruta per actualitzar un producte de la base de dades
 app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) => {
+  console.log(req.body);
   const productoId = req.body.id;
   const nuevaCategoria = req.body.categoria;
   const nuevoNombre = req.body.nom;
@@ -303,10 +295,20 @@ app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) =>
   }
 
   try {
-    const result = await executeQuery(
-      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
-      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
-    );
+
+    if (nuevoEstado != null) {
+      const result = await executeQuery(
+        "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
+        [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
+      );
+    }
+    else {
+      const result = await executeQuery(
+        "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
+        [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
+      );
+    }
+
     console.log("Actualització exitosa");
     res.json({ message: "Actualització exitosa" });
   } catch (error) {
@@ -356,17 +358,17 @@ app.post("/afegirProducteComanda", async (req, res) => {
   console.log(producte);
   console.log(producte.id);
 
-  console.log(sess.data.comanda_oberta);
+  console.log(req.session.comanda_oberta);
 
-  if (!sess.data.comanda_oberta) {
+  if (!req.session.comanda_oberta) {
     try {
-      sess.data.comanda_oberta = true;
-      console.log(sess.data.usuariID);
+      req.session.comanda_oberta = true;
+      console.log(req.session.usuariID);
       //console.log(req.session.comanda_oberta);
-      await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
+      await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [req.session.comanda_oberta, req.session.usuariID]);
 
       const nuevaComanda = {
-        id_usuari: sess.data.usuariID,
+        id_usuari: req.session.usuariID,
         entrega: null,
         estat: "oberta", // S'estableix la comanda inicialment com oberta
       };
@@ -493,7 +495,7 @@ app.get("/getEstadistiques", (req, res) => {
             console.log({ result });
 
             var jsonData = JSON.stringify(result);
-            var process = spawn('py', ["./estadistiques.py", jsonData]);
+            var process = spawn('python3', ["./estadistiques.py", jsonData]);
 
             process.stdout.on('data', (data) => {
 
@@ -514,24 +516,25 @@ app.get("/getEstadistiques", (req, res) => {
   });
 });
 
+
+
 // Ruta per obtenir la llista de comandes
 app.get("/getComandes", async (req, res) => {
+  console.log(req.session.usuariID);
   try {
     // Consulta la base de dades per obtenir les comandes
-    const comandes = await executeQuery("SELECT * FROM comanda");
-    console.log(comandes.length);
-    // Per a cada comanda, consulta els productes associats
-    for (const comanda of comandes) {
-      comanda.productes = await executeQuery(
-        "SELECT cp.quantitat, p.* FROM productes p " +
-        "INNER JOIN comanda_productes cp ON p.id = cp.producte_id " +
-        "WHERE cp.comanda_id = ?",
-        [comanda.id]
-      );
-    }
+    const comandes = await executeQuery("SELECT * FROM comanda WHERE id_usuari = ?", req.session.usuariID);
 
-    // Emitre les comandes al client en temps real
-    io.emit("novaComanda", { comandes });
+      // Per a cada comanda, consulta els productes associats
+      for (const comanda of comandes) {
+        comanda.productes = await executeQuery(
+          "SELECT cp.quantitat, p.* FROM productes p " +
+          "INNER JOIN comanda_productes cp ON p.id = cp.producte_id " +
+          "WHERE cp.comanda_id = ?",
+          [comanda.id]
+        );
+      }
+    
 
     console.log("Comandes enviades al client amb èxit");
     res.json({ comandes });
@@ -593,10 +596,10 @@ app.post("/pagar", async (req, res) => {
     // Actualiza el estado y la hora de entrega de la comanda en la base de datos
     await executeQuery("UPDATE comanda SET estat = ?, entrega = ? WHERE id = ?", [estat, entrega, id]);
 
-    sess.data.comanda_oberta = false;
-    console.log(sess.data.usuariID);
+    req.session.comanda_oberta = false;
+    console.log(req.session.usuariID);
     console.log(comanda);
-    await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [sess.data.comanda_oberta, sess.data.usuariID]);
+    await executeQuery("UPDATE usuaris SET comanda_oberta = ? WHERE id = ?", [req.session.comanda_oberta, req.session.usuariID]);
 
     res.json({ message: "Comanda aprovada amb èxit" });
   } catch (error) {
