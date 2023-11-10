@@ -308,12 +308,22 @@ app.post("/actualizarProducto", upload.single('imatgeEdit'), async (req, res) =>
   }
 
   try {
-    const result = await executeQuery(
-      "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
-      [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
-    );
-    console.log("Actualització exitosa");
-    res.json({ message: "Actualització exitosa" });
+    if (nuevoEstado!=null){
+      const result = await executeQuery(
+        "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ?, estado_producte = ? WHERE id = ?",
+        [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, nuevoEstado, productoId]
+      );
+    }
+    else {
+      const result = await executeQuery(
+        "UPDATE productes SET categoria = ?, nom = ?, descripció = ?, preu = ?, url_imatge = ? WHERE id = ?",
+        [nuevaCategoria, nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevaUrlImagen, productoId]
+      );
+    }
+      console.log("Actualització exitosa");
+      res.json({ message: "Actualització exitosa" });
+    
+    
   } catch (error) {
     res.status(500).json({ error });
   }
