@@ -40,10 +40,15 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-  socket.on('canviEstat', (msg) => {
+  socket.on('comandaAprovada', (msg) => {
     console.log("rebut");
     console.log(msg);
-    io.emit('canviEstat', msg);
+    io.emit('comandaAprovada', msg);
+  });
+  socket.on('comandaRebutjada', (msg) => {
+    console.log("rebut");
+    console.log(msg);
+    io.emit('comandaRebutjada', msg);
   });
 });
 
