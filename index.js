@@ -499,7 +499,7 @@ app.get("/getEstadistiques", (req, res) => {
             console.log({ result });
 
             var jsonData = JSON.stringify(result);
-            var process = spawn('py', ["./estadistiques.py", jsonData]);
+            var process = spawn('python3', ["./estadistiques.py", jsonData]);
 
             process.stdout.on('data', (data) => {
 
