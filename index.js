@@ -369,9 +369,10 @@ app.post("/afegirProducteComanda", async (req, res) => {
         id_usuari: sess.data.usuariID,
         entrega: null,
         estat: "oberta", // S'estableix la comanda inicialment com oberta
+        datacomanda: null
       };
 
-      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat) VALUES (?)", [[nuevaComanda.id_usuari, nuevaComanda.entrega, nuevaComanda.estat]]);
+      const result = await executeQuery("INSERT INTO comanda (id_usuari, entrega, estat, datacomanda) VALUES (?)", [[nuevaComanda.id_usuari, nuevaComanda.entrega, nuevaComanda.estat, nuevaComanda.datacomanda]]);
       const comandaId = result.insertId;
 
       const comandaProductos = [comandaId, producte.id, producte.quantitat]
@@ -604,6 +605,7 @@ app.post("/pagar", async (req, res) => {
   const id = comanda.id;
   const estat = 'pendent';
   const entrega = comanda.entrega; // Obtiene la hora de entrega del cuerpo de la solicitud
+  const dataComanda = comanda.datacomanda;
 
   if (!comanda || !estat || !entrega) {
     return res.status(400).json({ error: "Falten dades obligatòries" });
@@ -618,7 +620,8 @@ app.post("/pagar", async (req, res) => {
     }
 
     // Actualiza el estado y la hora de entrega de la comanda en la base de datos
-    await executeQuery("UPDATE comanda SET estat = ?, entrega = ? WHERE id = ?", [estat, entrega, id]);
+    await executeQuery("UPDATE comanda SET estat = ?, entrega = ?, datacomanda = NOW() WHERE id = ?", [estat, entrega, id]);
+
 
     sess.data.comanda_oberta = false;
     console.log(sess.data.usuariID);
