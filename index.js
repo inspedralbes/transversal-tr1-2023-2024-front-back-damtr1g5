@@ -200,7 +200,7 @@ app.get('/dadesUsuari', async (req, res) => {
 // Ruta per obtenir la informació dels productes
 app.get("/getProductesVUE", async (req, res) => {
   try {
-    const result = await executeQuery("SELECT * FROM productes WHERE ORDER BY categoria");
+    const result = await executeQuery("SELECT * FROM productes ORDER BY categoria");
     console.log("Productes obtinguts amb èxit");
     res.json({ result });
   } catch (error) {
